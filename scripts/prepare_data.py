@@ -116,7 +116,7 @@ def main():
             else:
                 speaker_id = existing_meta.get("speaker_id", target_speaker)
                 cloning_method = existing_meta.get("cloning_method", "none" if "genuine" in label else "voice_clone")
-                group = "enrolled_target" if speaker_id == target_speaker else "impostor"
+                group = existing_meta.get("group", "enrolled_target" if speaker_id == target_speaker else "impostor")
 
             entry = {
                 "clip_id": existing_meta.get("clip_id", base_name),
@@ -132,7 +132,13 @@ def main():
                 "duration_seconds": round(duration, 3),
                 "sample_rate": sr,
                 "conditions": existing_meta.get("conditions", "default recording"),
+                "device": existing_meta.get("device", "unknown"),
+                "room": existing_meta.get("room", "unknown"),
+                "distance": existing_meta.get("distance", "unknown"),
             }
+            for k in ["vad_speech_duration_seconds", "peak_amplitude", "clipped_samples", "aasist_window_eligible", "aasist_status"]:
+                if k in existing_meta:
+                    entry[k] = existing_meta[k]
             updated_manifest.append(entry)
 
     save_manifest(updated_manifest)
