@@ -1,0 +1,41 @@
+[project]
+name = "voiceguard"
+version = "0.1.0"
+description = "Real-Time Voice-Cloning and Impersonation Attack Detection System"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "torch==2.5.1",
+    "torchaudio==2.5.1",
+    "speechbrain>=1.0.0",
+    "soundfile>=0.12.1",
+    "librosa>=0.10.2",
+    "scipy>=1.13.0",
+    "numpy>=1.26.4,<2.0.0",
+    "scikit-learn>=1.5.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "websockets>=13.0",
+    "cryptography>=43.0.0",
+    "python-dotenv>=1.0.1",
+    "twilio>=9.3.0",
+    "pyyaml>=6.0.2",
+    "pydantic>=2.9.0",
+    "webrtcvad-wheels>=2.0.11",
+    "edge-tts>=7.2.0",
+    "requests>=2.32.0",
+    "pytest>=8.3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["models", "server"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]

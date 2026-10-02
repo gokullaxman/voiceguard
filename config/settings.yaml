@@ -1,0 +1,54 @@
+# VoiceGuard Configuration Settings
+
+audio:
+  sample_rate: 16000
+  telephony_sample_rate: 8000
+  window_seconds: 4.0
+  hop_seconds: 0.5
+  aasist_input_samples: 64600  # ~4.0375s exact required input length for AASIST
+
+vad:
+  backend: "webrtcvad"  # options: "webrtcvad", "energy_zcr"
+  mode: 2               # webrtcvad aggressiveness (0-3)
+  frame_ms: 30          # frame length in ms (10, 20, 30)
+  energy_threshold: 0.015
+  zcr_threshold: 0.05
+  min_speech_ratio: 0.3
+
+detectors:
+  spoof:
+    enabled: true
+    checkpoint_path: "models/artifacts/AASIST.pth"
+    weight: 0.4
+  speaker:
+    enabled: true
+    model_source: "speechbrain/spkrec-ecapa-voxceleb"
+    embedding_dim: 192
+    weight: 0.3
+    # Temporary linear normalization bounds until measured distributions in P3:
+    # clamped linear mapping: normalized = clamp((raw_cosine - min_sim) / (max_sim - min_sim), 0.0, 1.0)
+    raw_min_sim: 0.1
+    raw_max_sim: 0.85
+  replay:
+    enabled: true
+    model_path: "models/artifacts/replay_classifier.joblib"
+    weight: 0.3
+
+risk_engine:
+  weights:
+    spoof: 0.4
+    speaker: 0.3
+    replay: 0.3
+  bands:
+    low: 0.30
+    medium: 0.60
+    # > 0.60 is HIGH
+  sustained_evidence_count: 3
+  step_up:
+    challenge_type: "dtmf_otp"
+    timeout_seconds: 15
+    max_retries: 2
+
+streaming:
+  max_buffer_seconds: 10.0
+  inactivity_timeout_seconds: 30.0
