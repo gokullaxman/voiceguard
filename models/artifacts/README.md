@@ -73,3 +73,19 @@ All clips stored in `data/metadata/` for deterministic verification:
 - `..\30sep\ml\models\checkpoints\replay.pt`: 396 KB (97,508 parameters)
 
 **Provenance Determination**: These files were generated as lightweight synthetic stubs for offline unit tests in a previous prototype. They lack true acoustic feature extractors, pretraining weights, and documented origins. **They are explicitly rejected and not used anywhere in VoiceGuard.**
+
+---
+
+## 6. Phase P1 Diagnostic Observations & Untested Hypotheses
+
+### Empirical Observations on P1 Test Audio
+- Under the official `clovaai/aasist` tile/repeat padding strategy, 2 of 3 short bonafide recordings scored with elevated spoof probability (`bonafide_speaker1_utt1`: `0.837`, `bonafide_speaker2_utt1`: `0.998`), whereas zero-padded versions of these same clips produced low spoof probabilities (`0.047` and `0.005`).
+- On modern neural TTS clips (`edge-tts`), 1 clip (`Christopher`) scored high spoof probability (`0.977`), while 3 clips (`Aria`, `Guy`, `Sonia`) scored low spoof probabilities (`0.049`, `0.101`, `0.024`).
+
+### Untested Hypotheses (Requiring Systematic Evaluation)
+1. **Hypothesis 1 (Tile-Padding Phase Discontinuity)**: Repeating shorter speech utterances creates periodic waveform boundaries and unnatural phase repetitions that the SincNet filterbank and graph attention layers may treat as synthetic looping artifacts. This is an untested hypothesis; formal verification would require controlled ablation of window boundaries across speech durations.
+2. **Hypothesis 2 (Vocoder Domain Shift)**: Pretrained AASIST weights from ASVspoof 2019 LA were trained on 2019-era synthesis algorithms (WORLD, STRAIGHT, early WaveNet), which may fail to generalize to 2024 neural diffusion and flow-matching vocoders without fine-tuning. This is an untested hypothesis subject to evaluation on expanded benchmark sets.
+
+### Production Architectural Decision
+To prevent false-positive artifacts caused by padding sub-length audio, production VoiceGuard will **never pad** audio for the spoof detector. The spoof detector will evaluate only full 64,600-sample windows of active speech that satisfy the Voice Activity Detection (VAD) speech fraction threshold. Buffers with insufficient speech will return `"insufficient audio"`.
+

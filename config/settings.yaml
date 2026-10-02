@@ -6,6 +6,8 @@ audio:
   window_seconds: 4.0
   hop_seconds: 0.5
   aasist_input_samples: 64600  # ~4.0375s exact required input length for AASIST
+  no_padding: true             # Do not pad short audio in production
+  min_speech_fraction: 0.3     # Minimum fraction of speech in the 64,600-sample window
 
 vad:
   backend: "webrtcvad"  # options: "webrtcvad", "energy_zcr"
@@ -14,6 +16,15 @@ vad:
   energy_threshold: 0.015
   zcr_threshold: 0.05
   min_speech_ratio: 0.3
+
+dataset:
+  target_speaker_id: "gokul"
+  min_samples_per_scenario: 10
+  scenarios:
+    - "genuine_live"
+    - "genuine_replay"
+    - "cloned_direct"
+    - "cloned_replay"
 
 detectors:
   spoof:

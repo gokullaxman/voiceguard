@@ -1,0 +1,62 @@
+[
+  {
+    "clip_id": "spoof_tts",
+    "filename": "spoof_tts.wav",
+    "original_path": "data/cloned/spoof_tts.wav",
+    "simulated_path": "data/phone_simulated/spoof_tts_sim.wav",
+    "label": "cloned_direct",
+    "group": "other_tts",
+    "speaker_id": "tts_christopher",
+    "original_id": "spoof_tts",
+    "source_original_id": null,
+    "cloning_method": "edge-tts",
+    "duration_seconds": 5.208,
+    "sample_rate": 16000,
+    "conditions": "default recording"
+  },
+  {
+    "clip_id": "spoof_tts_aria",
+    "filename": "spoof_tts_aria.wav",
+    "original_path": "data/cloned/spoof_tts_aria.wav",
+    "simulated_path": "data/phone_simulated/spoof_tts_aria_sim.wav",
+    "label": "cloned_direct",
+    "group": "other_tts",
+    "speaker_id": "tts_aria",
+    "original_id": "spoof_tts_aria",
+    "source_original_id": null,
+    "cloning_method": "edge-tts",
+    "duration_seconds": 5.736,
+    "sample_rate": 16000,
+    "conditions": "default recording"
+  },
+  {
+    "clip_id": "spoof_tts_guy",
+    "filename": "spoof_tts_guy.wav",
+    "original_path": "data/cloned/spoof_tts_guy.wav",
+    "simulated_path": "data/phone_simulated/spoof_tts_guy_sim.wav",
+    "label": "cloned_direct",
+    "group": "other_tts",
+    "speaker_id": "tts_guy",
+    "original_id": "spoof_tts_guy",
+    "source_original_id": null,
+    "cloning_method": "edge-tts",
+    "duration_seconds": 5.424,
+    "sample_rate": 16000,
+    "conditions": "default recording"
+  },
+  {
+    "clip_id": "spoof_tts_sonia",
+    "filename": "spoof_tts_sonia.wav",
+    "original_path": "data/cloned/spoof_tts_sonia.wav",
+    "simulated_path": "data/phone_simulated/spoof_tts_sonia_sim.wav",
+    "label": "cloned_direct",
+    "group": "other_tts",
+    "speaker_id": "tts_sonia",
+    "original_id": "spoof_tts_sonia",
+    "source_original_id": null,
+    "cloning_method": "edge-tts",
+    "duration_seconds": 5.448,
+    "sample_rate": 16000,
+    "conditions": "default recording"
+  }
+]
