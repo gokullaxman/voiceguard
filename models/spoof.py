@@ -4,8 +4,7 @@ Pretrained AASIST model using ASVspoof 2019 LA weights.
 Architecture and weights source: clovaai/aasist (commit a04c9863f63d44471dde8a6abcb3b082b07cd1d1)
 """
 
-import math
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -15,11 +14,20 @@ from models.aasist_net import Model as AASISTArchitecture
 
 class AASISTSpoofDetector:
     """
-    Minimal AASIST loader and scorer for Phase P1.
-    Input requirement: 16 kHz audio, exactly 64,600 samples (~4.0375s).
-    Output mapping:
-      In ASVspoof 2019 LA AASIST, index 0 is spoof, index 1 is bonafide.
+    AASIST anti-spoofing detector.
+    
+    ASVspoof 2019 LA AASIST output convention:
+      Raw 2-logit output: [logit_0, logit_1]
+      Index 0: spoof
+      Index 1: bonafide
       spoof_prob = softmax(logits)[0]
+    
+    Scoring rule (Phase 3):
+      - Audio must be 16 kHz mono float32.
+      - Scores strictly the last 64,600 samples (~4.0375 s).
+      - No window search, no padding or tiling.
+      - If input length < 64,600 samples, returns (None, "insufficient_audio").
+      - Rejects NaN and Inf values by raising ValueError.
     """
     def __init__(self, checkpoint_path: str = "models/artifacts/AASIST.pth", device: str = "cpu"):
         self.device = torch.device(device)
@@ -39,26 +47,53 @@ class AASISTSpoofDetector:
         self.model.load_state_dict(state_dict)
         self.model.eval()
 
-    def preprocess_audio(self, audio: Union[np.ndarray, Tensor]) -> Tensor:
+    def score(
+        self,
+        audio: Union[np.ndarray, Tensor],
+        return_logits: bool = False
+    ) -> Union[Tuple[Optional[float], str], Tuple[Optional[float], Optional[np.ndarray], str]]:
+        """
+        Score input audio.
+        Extracts exactly the last 64,600 samples without padding or tiling.
+        Returns:
+            If return_logits is False: (spoof_prob, status)
+            If return_logits is True:  (spoof_prob, raw_logits, status)
+        """
         if isinstance(audio, np.ndarray):
+            if np.isnan(audio).any() or np.isinf(audio).any():
+                raise ValueError("Audio contains NaN or Inf values")
+            if audio.ndim > 1:
+                audio = audio.squeeze()
+            if audio.ndim > 1:
+                audio = audio.mean(axis=-1)
             audio = torch.from_numpy(audio).float()
-        if audio.ndim > 1:
-            audio = audio.squeeze()
-        # Ensure length is 64600 samples (truncate or repeat/pad)
+        elif isinstance(audio, Tensor):
+            if torch.isnan(audio).any() or torch.isinf(audio).any():
+                raise ValueError("Audio contains NaN or Inf values")
+            if audio.ndim > 1:
+                audio = audio.squeeze()
+            if audio.ndim > 1:
+                audio = audio.mean(dim=-1)
+            audio = audio.float()
+        else:
+            raise TypeError(f"Unsupported audio type: {type(audio)}")
+
         length = audio.shape[0]
         if length < self.nb_samp:
-            repeats = int(math.ceil(self.nb_samp / length))
-            audio = audio.repeat(repeats)[:self.nb_samp]
-        elif length > self.nb_samp:
-            audio = audio[:self.nb_samp]
-        return audio.unsqueeze(0).to(self.device)
+            if return_logits:
+                return None, None, "insufficient_audio"
+            return None, "insufficient_audio"
 
-    def score(self, audio: Union[np.ndarray, Tensor]) -> Tuple[float, np.ndarray]:
-        tensor = self.preprocess_audio(audio)
+        # Strictly the last 64,600 samples
+        window = audio[-self.nb_samp:].unsqueeze(0).to(self.device)
+
         with torch.no_grad():
-            _, logits = self.model(tensor)
+            _, logits = self.model(window)
             probs = F.softmax(logits, dim=-1)
             raw_logits = logits.cpu().numpy()[0]
             # Index 0 is spoof, index 1 is bonafide
             spoof_prob = float(probs[0, 0].item())
-        return spoof_prob, raw_logits
+
+        if return_logits:
+            return spoof_prob, raw_logits, "ok"
+        return spoof_prob, "ok"

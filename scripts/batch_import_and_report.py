@@ -261,7 +261,6 @@ def analyze_clips_vad_and_clipping(queue):
     print("PER-CLIP AUDIT: DURATION, VAD SPEECH, PEAKS, CLIPPING, AND AASIST 64.6k WINDOW ELIGIBILITY")
     print("=" * 125)
 
-    vad = VoiceActivityDetector(backend="webrtcvad", mode=2, frame_ms=30)
     min_speech_fraction = 0.3
     target_samples = 64600
 
@@ -290,18 +289,20 @@ def analyze_clips_vad_and_clipping(queue):
         peak = float(np.max(np.abs(audio)))
         clipped_count = int(np.sum(np.abs(audio) >= 0.9999))
 
-        # Overall speech fraction
-        overall_speech_fraction = vad.compute_speech_fraction(audio, sr)
+        # Overall speech fraction (fresh VAD per clip)
+        vad_clip = VoiceActivityDetector(backend="webrtcvad", mode=2, frame_ms=30)
+        overall_speech_fraction = vad_clip.compute_speech_fraction(audio, sr)
         speech_duration = duration * overall_speech_fraction
 
-        # Last 64,600 samples window check
+        # Last 64,600 samples window check (fresh VAD per window)
         if len(audio) < target_samples:
             window_status = "insufficient_audio (buffer < 64.6k)"
             win_sp_frac_str = "N/A"
             passed_window = False
         else:
             last_window = audio[-target_samples:]
-            win_sp_frac = vad.compute_speech_fraction(last_window, sr)
+            vad_win = VoiceActivityDetector(backend="webrtcvad", mode=2, frame_ms=30)
+            win_sp_frac = vad_win.compute_speech_fraction(last_window, sr)
             win_sp_frac_str = f"{win_sp_frac:.3f}"
             if win_sp_frac >= min_speech_fraction:
                 window_status = "OK (full window scoreable)"

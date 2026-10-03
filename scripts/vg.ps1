@@ -1,32 +1,53 @@
-# VoiceGuard PowerShell Command Interface
-# Usage: .\scripts\vg.ps1 <command>
-
+# VoiceGuard PowerShell Operations CLI
 param (
     [Parameter(Position=0, Mandatory=$true)]
-    [ValidateSet("setup", "test", "eval", "serve", "tunnel", "demo")]
-    [string]$Command
+    [ValidateSet("setup", "test", "eval", "serve", "tunnel", "demo", "preflight", "golive")]
+    [string]$Command,
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$RemainingArgs
 )
 
 $ErrorActionPreference = "Stop"
 
-# Ensure FFmpeg is available in environment
-$wingetFfmpeg = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-9.0.2-full_build\bin"
-if ((Test-Path $wingetFfmpeg) -and ($env:Path -notlike "*$wingetFfmpeg*")) {
-    $env:Path = "$wingetFfmpeg;$env:Path"
-}
-
 switch ($Command) {
     "setup" {
-        Write-Host "Setting up VoiceGuard environment with uv..." -ForegroundColor Cyan
+        Write-Host "=== Setting up VoiceGuard Environment ===" -ForegroundColor Cyan
         uv sync
-        uv run python scripts/download_models.py
+        if (-not (Test-Path ".env")) {
+            Write-Host "Generating fresh enrollment key in .env..." -ForegroundColor Yellow
+            uv run python scripts/enroll.py --gen-key
+        }
         Write-Host "Setup complete." -ForegroundColor Green
     }
     "test" {
-        Write-Host "Running VoiceGuard test suite..." -ForegroundColor Cyan
-        uv run pytest tests/test_p1_gate.py -v -s
+        Write-Host "=== Running VoiceGuard Test Suite ===" -ForegroundColor Cyan
+        uv run pytest -v
     }
-    default {
-        Write-Host "Command '$Command' is not yet implemented for the current phase." -ForegroundColor Yellow
+    "eval" {
+        Write-Host "=== Running VoiceGuard Fused Evaluation ===" -ForegroundColor Cyan
+        uv run python scratch/run_step4_fused_eval.py
+    }
+    "serve" {
+        Write-Host "=== Starting VoiceGuard Telephony Gateway (Uvicorn) ===" -ForegroundColor Cyan
+        uv run uvicorn server.app:app --host 0.0.0.0 --port 8000 --reload
+    }
+    "tunnel" {
+        Write-Host "=== Establishing Public Telephony Tunnel ===" -ForegroundColor Cyan
+        Write-Host "Exposing port 8000 for Twilio Voice Webhooks..." -ForegroundColor Yellow
+        Write-Host "Run: ngrok http 8000  OR  cloudflared tunnel --url http://localhost:8000" -ForegroundColor Gray
+    }
+    "golive" {
+        Write-Host "=== VoiceGuard GoLive Tunnel Setup ===" -ForegroundColor Cyan
+        uv run python scripts/golive.py $RemainingArgs
+    }
+    "demo" {
+        Write-Host "=== Starting VoiceGuard Exhibition Demo Server [SIMULATION, not a live call] ===" -ForegroundColor Cyan
+        Write-Host "Opening http://localhost:8000 in your browser..." -ForegroundColor Yellow
+        Start-Process "http://localhost:8000"
+        uv run uvicorn server.app:app --host 0.0.0.0 --port 8000
+    }
+    "preflight" {
+        Write-Host "=== Running VoiceGuard Preflight Health Checks ===" -ForegroundColor Cyan
+        uv run python scripts/preflight.py
     }
 }

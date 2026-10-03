@@ -42,3 +42,28 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.log
+
+# Audit logs
+data/audit/
+
+# Phone live audio data
+data/phone_live/
+data/phone_live_raw/
+data/phone_simulated/
+
+# Audio
+*.opus
+
+# Artifacts and Scratch
+models/artifacts/
+scratch/*
+!scratch/fused_eval.json
+!scratch/streaming_eval.json
+
+# Local privacy exclusions and step scripts
+docs/LIVE_BRINGUP.md
+scripts/step*.py
+scripts/verify_*.py
+scripts/generate_docs.py
+tests/test_golive.py
+

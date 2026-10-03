@@ -12,9 +12,11 @@ VoiceGuard Dataset Preparation Pipeline
 import json
 import os
 import sys
+import numpy as np
 import soundfile as sf
 import yaml
 from server.telephony import simulate_telephony_channel
+from server.preprocessing import VoiceActivityDetector
 
 
 MANIFEST_PATH = "data/metadata/manifest.json"
@@ -139,6 +141,23 @@ def main():
             for k in ["vad_speech_duration_seconds", "peak_amplitude", "clipped_samples", "aasist_window_eligible", "aasist_status"]:
                 if k in existing_meta:
                     entry[k] = existing_meta[k]
+
+            if "vad_speech_duration_seconds" not in entry:
+                vad_clip = VoiceActivityDetector(backend="webrtcvad", mode=2, frame_ms=30)
+                sp_frac = vad_clip.compute_speech_fraction(audio, sr)
+                entry["vad_speech_duration_seconds"] = round(duration * sp_frac, 3)
+                entry["peak_amplitude"] = round(float(np.max(np.abs(audio))), 4)
+                entry["clipped_samples"] = int(np.sum(np.abs(audio) >= 0.9999))
+                if len(audio) < 64600:
+                    entry["aasist_window_eligible"] = False
+                    entry["aasist_status"] = "insufficient_audio"
+                else:
+                    last_win = audio[-64600:]
+                    vad_win = VoiceActivityDetector(backend="webrtcvad", mode=2, frame_ms=30)
+                    win_sp_frac = vad_win.compute_speech_fraction(last_win, sr)
+                    passed = win_sp_frac >= 0.3
+                    entry["aasist_window_eligible"] = passed
+                    entry["aasist_status"] = "ok" if passed else "insufficient_audio"
             updated_manifest.append(entry)
 
     save_manifest(updated_manifest)

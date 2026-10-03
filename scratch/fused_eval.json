@@ -1,0 +1,182 @@
+{
+  "config_hash": "ea7f4e3d385cae220d76020bb622bac761214851a8191c749675d21500c58837",
+  "configurations": {
+    "Config 1: All Three (SPOOF + SPEAKER + REPLAY)": {
+      "accuracy": 0.975,
+      "wilson_ci_95": {
+        "proportion": 0.975,
+        "lower": 0.8712,
+        "upper": 0.9956,
+        "margin": 0.0622
+      },
+      "precision": 1.0,
+      "recall": 0.9667,
+      "f1": 0.9831,
+      "TP": 29,
+      "TN": 10,
+      "FP": 0,
+      "FN": 1,
+      "missing_detector_clips": 9,
+      "scenario_accuracies": {
+        "genuine_live": 1.0,
+        "cloned_direct": 0.9,
+        "genuine_replay": 1.0,
+        "cloned_replay": 1.0
+      },
+      "scenario_wilson_ci_95": {
+        "genuine_live": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        },
+        "cloned_direct": {
+          "proportion": 0.9,
+          "lower": 0.5958,
+          "upper": 0.9821,
+          "margin": 0.1931
+        },
+        "genuine_replay": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        },
+        "cloned_replay": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        }
+      },
+      "pass_target": true
+    },
+    "Config 2: SPOOF Off (SPEAKER + REPLAY)": {
+      "accuracy": 0.975,
+      "wilson_ci_95": {
+        "proportion": 0.975,
+        "lower": 0.8712,
+        "upper": 0.9956,
+        "margin": 0.0622
+      },
+      "precision": 1.0,
+      "recall": 0.9667,
+      "f1": 0.9831,
+      "TP": 29,
+      "TN": 10,
+      "FP": 0,
+      "FN": 1,
+      "missing_detector_clips": 0,
+      "scenario_accuracies": {
+        "genuine_live": 1.0,
+        "cloned_direct": 0.9,
+        "genuine_replay": 1.0,
+        "cloned_replay": 1.0
+      },
+      "scenario_wilson_ci_95": {
+        "genuine_live": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        },
+        "cloned_direct": {
+          "proportion": 0.9,
+          "lower": 0.5958,
+          "upper": 0.9821,
+          "margin": 0.1931
+        },
+        "genuine_replay": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        },
+        "cloned_replay": {
+          "proportion": 1.0,
+          "lower": 0.7225,
+          "upper": 1.0,
+          "margin": 0.1388
+        }
+      },
+      "pass_target": true
+    },
+    "Config 3: SPEAKER Only": {
+      "accuracy": 0.7,
+      "wilson_ci_95": {
+        "proportion": 0.7,
+        "lower": 0.5457,
+        "upper": 0.8193,
+        "margin": 0.1368
+      },
+      "precision": 0.9091,
+      "recall": 0.6667,
+      "f1": 0.7692,
+      "TP": 20,
+      "TN": 8,
+      "FP": 2,
+      "FN": 10,
+      "missing_detector_clips": 0,
+      "scenario_accuracies": {
+        "genuine_live": 0.8,
+        "cloned_direct": 0.9,
+        "genuine_replay": 0.5,
+        "cloned_replay": 0.6
+      },
+      "scenario_wilson_ci_95": {
+        "genuine_live": {
+          "proportion": 0.8,
+          "lower": 0.4902,
+          "upper": 0.9433,
+          "margin": 0.2266
+        },
+        "cloned_direct": {
+          "proportion": 0.9,
+          "lower": 0.5958,
+          "upper": 0.9821,
+          "margin": 0.1931
+        },
+        "genuine_replay": {
+          "proportion": 0.5,
+          "lower": 0.2366,
+          "upper": 0.7634,
+          "margin": 0.2634
+        },
+        "cloned_replay": {
+          "proportion": 0.6,
+          "lower": 0.3127,
+          "upper": 0.8318,
+          "margin": 0.2596
+        }
+      },
+      "pass_target": false
+    }
+  },
+  "extra_groups": {
+    "cloned_direct_merged": {
+      "n": 3,
+      "median_risk": 0.5011,
+      "allow": 1,
+      "not_allow": 2
+    },
+    "other_tts": {
+      "n": 4,
+      "median_risk": 0.9531,
+      "allow": 0,
+      "not_allow": 4
+    },
+    "session2_seg": {
+      "n": 30,
+      "median_risk": 0.0011,
+      "allow": 30,
+      "not_allow": 0
+    }
+  },
+  "production_alternative": "Config 2: SPOOF Off (SPEAKER + REPLAY)",
+  "post_hoc_caveat": "Choosing 'SPOOF off' was done post-hoc after seeing results indicating severe domain shift on live clips; accuracy is optimistic and cannot be treated as a pure held-out estimate.",
+  "speaker_map_calibration": {
+    "a": 0.3364065,
+    "b": 0.416924,
+    "label": "fit on all evaluation data, no held-out estimate"
+  }
+}

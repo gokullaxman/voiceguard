@@ -56,8 +56,16 @@ def test_aasist_real_inference():
     audio_bonafide, sr1 = sf.read(bonafide_wav)
     audio_spoof, sr2 = sf.read(spoof_wav)
 
-    spoof_prob_bonafide, logits_bonafide = detector.score(audio_bonafide)
-    spoof_prob_spoof, logits_spoof = detector.score(audio_spoof)
+    # Legacy P1 test: tile audio if under 64,600 samples so models/spoof length requirement is satisfied
+    if len(audio_bonafide) < 64600:
+        n_rep = int(np.ceil(64600 / len(audio_bonafide)))
+        audio_bonafide = np.tile(audio_bonafide, n_rep)[:64600]
+    if len(audio_spoof) < 64600:
+        n_rep = int(np.ceil(64600 / len(audio_spoof)))
+        audio_spoof = np.tile(audio_spoof, n_rep)[:64600]
+
+    spoof_prob_bonafide, logits_bonafide, _ = detector.score(audio_bonafide, return_logits=True)
+    spoof_prob_spoof, logits_spoof, _ = detector.score(audio_spoof, return_logits=True)
 
     print("\n[GATE 2 - AASIST Inference]")
     print(f"Bonafide Clip ({bonafide_wav}):")

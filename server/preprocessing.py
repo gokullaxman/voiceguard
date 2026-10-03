@@ -53,9 +53,27 @@ class VoiceActivityDetector:
         if num_frames == 0:
             return 0.0
 
+        # Fresh webrtcvad.Vad instance for every clip and every window computation (order-independent)
+        vad_inst = None
+        if self.backend == "webrtcvad":
+            try:
+                import webrtcvad
+                vad_inst = webrtcvad.Vad(self.mode)
+            except Exception:
+                pass
+
         speech_count = 0
         for i in range(num_frames):
             frame = audio_float32[i * frame_size:(i + 1) * frame_size]
+            if vad_inst is not None:
+                pcm_int16 = np.clip(frame * 32767.0, -32768, 32767).astype(np.int16)
+                try:
+                    if vad_inst.is_speech(pcm_int16.tobytes(), sample_rate):
+                        speech_count += 1
+                    continue
+                except Exception:
+                    pass
+
             if self.is_speech_frame(frame, sample_rate):
                 speech_count += 1
 

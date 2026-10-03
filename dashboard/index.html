@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceGuard — Telephony Security Gateway [SIMULATION, not a live call]</title>
+    <style>
+        :root {
+            --bg-navy: #060b14;
+            --sidebar-bg: #09101d;
+            --card-bg: #0d1527;
+            --card-border: #1e293b;
+            --card-inner: #131d33;
+            --teal: #14b8a6;
+            --teal-dim: rgba(20, 184, 166, 0.15);
+            --amber: #f59e0b;
+            --amber-dim: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --green: #10b981;
+            --green-dim: rgba(16, 185, 129, 0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-navy); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Pinned Top Navigation Bar */
+        .topbar {
+            height: 52px;
+            background: #09101e;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 16px; }
+        .logo-mark { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; letter-spacing: -0.3px; color: var(--text-primary); }
+        .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+        .breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .breadcrumb strong { color: var(--text-secondary); }
+
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .sim-pinned-banner {
+            background: #1e1b4b;
+            border: 1px solid #4338ca;
+            color: #c7d2fe;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-chip {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chip-live { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+        .chip-recon { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+
+        /* App Layout: Left Slim Sidebar + Main Content */
+        .app-body { display: flex; flex: 1; min-height: calc(100vh - 52px); }
+        
+        .sidebar {
+            width: 64px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .nav-icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .nav-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .nav-icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+        .nav-icon-btn.active { background: var(--teal-dim); color: var(--teal); border-color: rgba(20, 184, 166, 0.3); }
+
+        /* Main Workspace Container */
+        .main-content { flex: 1; padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%; }
+
+        /* Tab Panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Cards and Headers */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--teal);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-title span.sub { font-size: 10px; color: var(--text-muted); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+        /* Two-Column Main Grid */
+        .grid, .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .grid, .two-col-grid { grid-template-columns: 1fr; }
+            .sidebar { width: 54px; }
+        }
+
+        /* Demo Controller Header Strip */
+        .demo-panel { background: #0c1629; border: 1px solid #1e293b; }
+        .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+        select, button { width: 100%; padding: 8px 12px; border-radius: 6px; font-size: 12px; border: 1px solid var(--card-border); background: #162035; color: #fff; outline: none; }
+        select:focus { border-color: var(--teal); }
+        .btn-group { display: flex; gap: 8px; }
+        .btn { cursor: pointer; font-weight: 700; transition: all 0.2s; border: none; font-size: 12px; border-radius: 6px; }
+        .btn-start { background: var(--teal); color: #022c22; }
+        .btn-start:hover { background: #0d9488; color: #fff; }
+        .btn-stop { background: var(--red); color: #fff; }
+        .btn-stop:hover { background: #dc2626; }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Scenario Comparison Strip */
+        .comparison-line {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .pill-match { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+        .pill-mismatch { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+
+        /* Audio Waveform Canvas Card */
+        .canvas-container { position: relative; background: #070e1c; border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; }
+        canvas.vis-canvas { width: 100%; height: 110px; display: block; }
+        .audio-ctrl-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #091224;
+            border-top: 1px solid var(--card-border);
+            font-size: 12px;
+        }
+        .audio-playback-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-play-pause {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            background: var(--teal);
+            color: #042f2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            font-size: 12px;
+        }
+        .marker-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        /* Mel-Spectrogram Card */
+        .axis-canvas-wrapper { position: relative; padding-left: 42px; padding-bottom: 22px; background: #070e1c; border: 1px solid var(--card-border); border-radius: 8px; }
+        .y-axis-label { position: absolute; left: 6px; font-size: 9px; color: var(--text-muted); font-family: monospace; }
+        .x-axis-label { position: absolute; bottom: 4px; font-size: 9px; color: var(--text-muted); font-family: monospace; }
+
+        /* Details Card */
+        .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px; }
+        .detail-item { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 6px; }
+        .detail-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+        .detail-val { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+
+        /* Voiceprint Verification Card */
+        .readout-large { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+        .readout-num { font-size: 38px; font-weight: 800; font-family: monospace; }
+        .readout-sub { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+        .reference-bar-container { position: relative; margin: 16px 0 28px 0; }
+        .reference-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; position: relative; }
+        .reference-fill { height: 100%; background: var(--teal); border-radius: 4px; width: 0%; transition: width 0.3s ease; }
+        .ref-mark { position: absolute; top: -6px; width: 2px; height: 20px; background: var(--amber); }
+        .ref-mark-label { position: absolute; top: 16px; font-size: 9px; color: var(--amber); white-space: nowrap; transform: translateX(-50%); font-weight: 600; }
+
+        /* Detector Status List (3 rows strictly) */
+        .detector-list { display: flex; flex-direction: column; gap: 8px; }
+        .detector-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .det-title { font-weight: 600; color: var(--text-primary); }
+        .det-right { display: flex; align-items: center; gap: 10px; }
+        .det-num { font-family: monospace; font-size: 13px; font-weight: 700; }
+        .chip { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .chip-allow { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+        .chip-warn { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+        .chip-block { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+        .chip-off { background: rgba(100, 116, 139, 0.2); color: var(--text-muted); border: 1px solid #475569; }
+
+        /* Fused Risk Meter */
+        .fused-risk-display { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .risk-huge { font-size: 44px; font-weight: 800; font-family: monospace; }
+        .risk-bar-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+        .risk-bar-progress { height: 100%; width: 0%; transition: width 0.25s ease, background-color 0.25s ease; }
+        .threshold-ticks { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); font-family: monospace; }
+
+        /* Bottom Fixed Action Bar */
+        .bottom-action-bar {
+            position: sticky;
+            bottom: 0;
+            background: #09101d;
+            border-top: 1px solid var(--card-border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 90;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+            flex-wrap: wrap;
+        }
+        .action-left { display: flex; align-items: center; gap: 12px; }
+        .action-verdict {
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .verdict-allow { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+        .verdict-stepup { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+        .verdict-block { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+        
+        .human-review-chip {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .disclaimer-subtext { font-size: 11px; color: var(--text-muted); max-width: 620px; line-height: 1.4; }
+
+        /* Upload Panel */
+        .upload-panel { background: #0c1629; border: 1px solid var(--card-border); }
+        .drop-zone { border: 2px dashed #334155; border-radius: 8px; padding: 22px; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(15, 23, 42, 0.4); margin-bottom: 14px; }
+        .drop-zone.dragover { border-color: var(--teal); background: var(--teal-dim); }
+        .drop-zone-text { font-size: 12px; color: var(--text-secondary); }
+        .drop-zone-text strong { color: var(--text-primary); }
+        .file-info-badge { display: inline-flex; align-items: center; gap: 8px; background: #1e293b; padding: 4px 12px; border-radius: 6px; font-size: 11px; margin-top: 8px; border: 1px solid #334155; }
+        .fixed-disclaimer { background: rgba(30, 27, 75, 0.7); border: 1px solid #4338ca; color: #c7d2fe; padding: 12px 16px; border-radius: 8px; font-size: 11px; margin-top: 16px; line-height: 1.5; }
+        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); color: #fde68a; border-radius: 8px; padding: 10px 14px; margin: 14px 0; font-size: 11px; }
+
+        /* Audit Table */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--card-border); }
+        th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        .mono { font-family: monospace; }
+
+        /* Limitations Box */
+        details.limitations-box { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 10px 14px; margin-top: 16px; font-size: 11px; }
+        details.limitations-box summary { font-size: 12px; font-weight: 700; color: var(--amber); cursor: pointer; outline: none; }
+        details.limitations-box ul { margin: 8px 0 0 16px; line-height: 1.6; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <!-- Pinned Top Navigation Bar with SIMULATION Label -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo-mark">
+                <div class="logo-dot"></div>
+                <span>VoiceGuard</span>
+            </div>
+            <div class="breadcrumb">
+                <span>/</span>
+                <span id="breadcrumbSection">Overview</span>
+                <span>/</span>
+                <strong>Analysis</strong>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div id="connStatus" class="status-chip chip-recon">Connecting...</div>
+        </div>
+    </header>
+
+    <div class="app-body">
+        <!-- Slim Left Icon Sidebar -->
+        <nav class="sidebar" aria-label="Sidebar Navigation">
+            <button class="nav-icon-btn active" onclick="switchNav('overview')" title="Overview">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Overview</span>
+            </button>
+            <button class="nav-icon-btn" onclick="switchNav('demo')" title="Demo Scenarios">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Demo</span>
+            </button>
+            <button class="nav-icon-btn" onclick="switchNav('upload')" title="Upload Analysis">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Upload</span>
+            </button>
+            <button class="nav-icon-btn" onclick="switchNav('audit')" title="Audit Trail">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Audit</span>
+            </button>
+            <button class="nav-icon-btn" onclick="switchNav('settings')" title="Settings &amp; Info">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Config</span>
+            </button>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+
+            <!-- Interactive Demo Controller Card (Visible on Overview & Demo) -->
+            <div id="demoPanelCard" class="card demo-panel">
+                <div class="section-title">
+                    <span>Telephony Demonstration Panel</span>
+                    <span class="sub">Allowlisted Evaluation Clips &bull; SIMULATION</span>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="scenarioSelect">Demo Scenario:</label>
+                        <select id="scenarioSelect">
+                            <option value="">Loading scenarios...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="sensitivitySelect">Intent Sensitivity:</label>
+                        <select id="sensitivitySelect">
+                            <option value="balance_check">Balance Inquiry (+0.00)</option>
+                            <option value="password_reset">Credential Reset (+0.15)</option>
+                            <option value="wire_transfer">Wire Transfer (+0.20)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="speedSelect">Playback Speed:</label>
+                        <select id="speedSelect">
+                            <option value="1.0">1x (Real-Time 20ms)</option>
+                            <option value="2.0">2x (Accelerated)</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btnStart" class="btn btn-start" onclick="startDemo()">Start Demo</button>
+                        <button id="btnStop" class="btn btn-stop" onclick="stopDemo()" disabled>Stop</button>
+                    </div>
+                </div>
+
+                <!-- Scenario Comparison Line with Amber Mismatch Flags -->
+                <div class="comparison-line">
+                    <span style="font-weight: 700; color: var(--text-secondary);">STATUS:</span>
+                    <span id="expectedLabel">Expected: --</span>
+                    <span>&bull;</span>
+                    <span id="bandLabel">Final Band: --</span>
+                    <span>&bull;</span>
+                    <span id="outcomeLabel">Outcome: Ready</span>
+                    <span id="matchPill" class="status-pill" style="display: none;"></span>
+                </div>
+            </div>
+
+            <!-- Upload Card (Visible on Overview & Upload) -->
+            <div id="uploadPanelCard" class="card upload-panel">
+                <div class="section-title">
+                    <span>Analyse an audio file</span>
+                    <span class="sub">Upload Analysis &amp; Screening</span>
+                </div>
+                
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('uploadFileInput').click()">
+                    <input type="file" id="uploadFileInput" accept=".wav,.mp3,.m4a,.ogg,.opus,.flac,.aac,.webm" style="display: none;">
+                    <div class="drop-zone-text">
+                        <strong>Choose an audio file</strong> or drag &amp; drop it here<br>
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: inline-block;">
+                            Supported: WAV, MP3, M4A, OGG, OPUS, FLAC, AAC, WEBM (2.0s &ndash; 120s, max 25 MB)
+                        </span>
+                    </div>
+                    <div id="fileInfoBadge" class="file-info-badge" style="display: none;">
+                        <span id="fileName">file.wav</span> &bull; <span id="fileSize">0 KB</span>
+                    </div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr auto; align-items: end;">
+                    <div class="input-group">
+                        <label for="uploadSensitivitySelect">Action Sensitivity:</label>
+                        <select id="uploadSensitivitySelect">
+                            <option value="balance_check">Balance Inquiry (+0.00)</option>
+                            <option value="password_reset">Credential Reset (+0.15)</option>
+                            <option value="wire_transfer">Wire Transfer (+0.20)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="uploadModeSelect">Analysis Mode:</label>
+                        <select id="uploadModeSelect">
+                            <option value="stream" selected>Stream (20ms frames, full-speed)</option>
+                            <option value="whole">Whole (single fused clip score)</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="padding-bottom: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="uploadPhoneSim" checked style="width: 14px; height: 14px; accent-color: var(--teal);">
+                            <span>Apply Phone Simulation</span>
+                        </label>
+                    </div>
+                    <div>
+                        <button id="btnAnalyseUpload" class="btn btn-start" onclick="analyseUploadedFile()">Analyse Audio</button>
+                    </div>
+                </div>
+
+                <div id="uploadProgress" style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--teal); padding: 6px 0;">
+                    <span class="status-chip chip-recon">Processing audio upload...</span>
+                    <span>Probing format, converting to 16kHz float32 WAV, and running scoring pipeline...</span>
+                </div>
+                <div id="uploadError" class="warning-box" style="display: none; background: var(--red-dim); border-color: var(--red); color: #fca5a5;"></div>
+
+                <div id="uploadWarningsBox" class="warning-box" style="display: none;">
+                    <strong>Active Warnings:</strong>
+                    <ul id="uploadWarningsList"></ul>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
+                    <span style="font-size: 11px; color: var(--text-muted);">
+                        Synthetic Spoof (AASIST): <strong style="color: var(--amber);">OFF (domain shift, see limitations)</strong>
+                    </span>
+                    <button class="btn" style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 6px 12px; width: auto; font-size: 11px;" onclick="downloadResultJson()">
+                        &#x2913; Download result as JSON
+                    </button>
+                </div>
+
+                <!-- Fixed Text Disclaimer Under Upload -->
+                <div class="fixed-disclaimer">
+                    UPLOAD ANALYSIS, not a validated accuracy figure. Calibrated for one enrolled speaker. Synthetic-speech detector is off. A 'Block' or 'Step-up' means the system is suspicious, not that the clip is proven fake. An 'Allow' does not prove the clip is genuine.
+                </div>
+            </div>
+
+            <!-- Two-Column Telemetry Workspace -->
+            <div class="grid">
+                
+                <!-- Left Column: Audio, Spectrogram, Details -->
+                <div class="col-left">
+                    
+                    <!-- a) Audio Card: Waveform, Playhead, Markers -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Audio &amp; Event Stream</span>
+                            <span id="activeAudioSourceLabel" class="sub">No clip loaded</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="waveformCanvas" class="vis-canvas" width="600" height="110"></canvas>
+                        </div>
+                        <div class="audio-ctrl-strip">
+                            <div class="audio-playback-actions">
+                                <button id="playPauseBtn" class="btn-play-pause" onclick="toggleAudioPlayback()" title="Play/Pause">&#9658;</button>
+                                <span id="audioTimeReadout" class="mono" style="color: var(--text-secondary); font-size: 12px;">00:00 / 00:00</span>
+                            </div>
+                            <div id="audioEventMarkers" style="display: flex; gap: 6px; align-items: center;">
+                                <span style="font-size: 10px; color: var(--text-muted);">Event markers:</span>
+                                <span id="markersList" style="font-size: 11px; color: var(--text-secondary);">None</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- b) Mel-Spectrogram Card (display only, not the model input) -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Mel-spectrogram (display only, not the model input)</span>
+                            <span class="sub">Server-Generated 64 &times; 300 int8 Matrix</span>
+                        </div>
+                        <div class="axis-canvas-wrapper">
+                            <span class="y-axis-label" style="top: 8px;">8 kHz</span>
+                            <span class="y-axis-label" style="top: 48px;">4 kHz</span>
+                            <span class="y-axis-label" style="bottom: 26px;">0 Hz</span>
+                            <canvas id="spectrogramCanvas" class="vis-canvas" width="560" height="110"></canvas>
+                            <span class="x-axis-label" style="left: 44px;">0.0s</span>
+                            <span id="specDurationLabel" class="x-axis-label" style="right: 8px;">--s</span>
+                        </div>
+                    </div>
+
+                    <!-- c) Details Card -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Session &amp; Channel Details</span>
+                            <span class="sub">Active Pipeline Parameters</span>
+                        </div>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <div class="detail-lbl">Audio Source</div>
+                                <div id="detailSource" class="detail-val">--</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-lbl">Audio Duration</div>
+                                <div id="detailDuration" class="detail-val mono">--</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-lbl">Phone-Sim Applied</div>
+                                <div id="detailPhoneSim" class="detail-val">YES (8kHz &mu;-law)</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-lbl">Action Sensitivity</div>
+                                <div id="detailSensitivity" class="detail-val">balance_check (+0.00)</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-lbl">Windows Scored / Skipped</div>
+                                <div id="detailWindows" class="detail-val mono">0 scored / 0 skipped</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-lbl">Call / Stream SID</div>
+                                <div id="detailCallSid" class="detail-val mono" style="font-size: 11px;">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Voiceprint, Replay, Detectors, Risk -->
+                <div class="col-right">
+
+                    <!-- d) Voiceprint Verification Card -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Voiceprint Verification</span>
+                            <span class="sub">ECAPA-TDNN Cosine Metric</span>
+                        </div>
+                        <div class="readout-large">
+                            <div id="speakerCosineVal" class="readout-num">--</div>
+                            <div class="readout-sub">
+                                <span id="speakerMatchPct">--%</span> match
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+                            mapped with a fixed linear map fit on evaluation data, not a calibrated probability
+                        </div>
+
+                        <!-- Reference Bar with (a) and (b) reference marks (NO 85% threshold) -->
+                        <div class="reference-bar-container">
+                            <div class="reference-bar">
+                                <div id="speakerBarFill" class="reference-fill"></div>
+                                <div class="ref-mark" style="left: 33.6%;" title="attacker-like median (a = 0.3364)">
+                                    <span class="ref-mark-label">attacker-like median (a)</span>
+                                </div>
+                                <div class="ref-mark" style="left: 41.7%;" title="genuine-like median (b = 0.4169)">
+                                    <span class="ref-mark-label">genuine-like median (b)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Per-window Speaker Sim Trend Canvas -->
+                        <div style="margin-top: 18px;">
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 700;">Per-Window Speaker Similarity Trend</div>
+                            <div class="canvas-container" style="height: 54px;">
+                                <canvas id="speakerChartCanvas" width="500" height="54" style="width: 100%; height: 54px; display: block;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- e) Replay and Channel Analysis Card -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Replay and Channel Analysis</span>
+                            <span id="replayChip" class="chip chip-off">--</span>
+                        </div>
+                        <div class="readout-large">
+                            <div id="replayProbVal" class="readout-num">--</div>
+                            <div class="readout-sub">Acoustic Loudspeaker Probability</div>
+                        </div>
+                        <div class="canvas-container" style="height: 54px; margin-top: 10px;">
+                            <canvas id="replayChartCanvas" width="500" height="54" style="width: 100%; height: 54px; display: block;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- f) Detector Status List (3 rows strictly: Speaker, Replay, Spoof) -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Detector Status</span>
+                            <span class="sub">Production Fusion Ensemble</span>
+                        </div>
+                        <div class="detector-list">
+                            <div class="detector-row">
+                                <span class="det-title">Speaker match</span>
+                                <div class="det-right">
+                                    <span id="detRowSpeakerVal" class="det-num">--</span>
+                                    <span id="detRowSpeakerChip" class="chip chip-off">STANDBY</span>
+                                </div>
+                            </div>
+                            <div class="detector-row">
+                                <span class="det-title">Replay probability</span>
+                                <div class="det-right">
+                                    <span id="detRowReplayVal" class="det-num">--</span>
+                                    <span id="detRowReplayChip" class="chip chip-off">STANDBY</span>
+                                </div>
+                            </div>
+                            <div class="detector-row" style="background: rgba(245, 158, 11, 0.03); border-color: rgba(245, 158, 11, 0.2);">
+                                <span class="det-title">Synthetic speech (SPOOF)</span>
+                                <div class="det-right">
+                                    <span class="chip chip-warn">OFF, domain shift</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- g) Fused Risk Meter & Plain-Language Explanation -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>Fused Risk Assessment</span>
+                            <span id="riskBandChip" class="chip chip-allow">LOW</span>
+                        </div>
+                        <div class="fused-risk-display">
+                            <div id="riskScoreVal" class="risk-huge">0.00</div>
+                            <div id="riskDecisionVal" style="font-size: 15px; font-weight: 700; color: var(--green);">Allow</div>
+                        </div>
+                        <div class="risk-bar-track">
+                            <div id="riskProgressBar" class="risk-bar-progress" style="background: var(--green);"></div>
+                        </div>
+                        <div class="threshold-ticks">
+                            <span>0.00 (ALLOW)</span>
+                            <span>0.30 (STEP-UP)</span>
+                            <span>0.60 (BLOCK)</span>
+                            <span>1.00</span>
+                        </div>
+                        <div id="riskExplanationText" style="margin-top: 14px; font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--card-border);">
+                            Weights: 50% Speaker, 50% Replay, 0% Spoof (off). Sustained evidence rule requires 3 consecutive qualifying windows.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Cryptographic Audit Trail Table -->
+            <div id="auditPanelCard" class="card" style="margin-top: 20px;">
+                <div class="section-title">
+                    <span>Cryptographic Audit Chain (Recent Scored Windows)</span>
+                    <span id="auditVerifiedBadge" class="status-chip chip-live">Chain Verified</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Call SID</th>
+                            <th>Win</th>
+                            <th>Risk</th>
+                            <th>Band</th>
+                            <th>Decision</th>
+                            <th>Action Trigger</th>
+                            <th>Latency</th>
+                            <th>SHA-256 Record Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Listening for live or demo streaming events...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Limitations Disclosure Box -->
+            <details class="limitations-box">
+                <summary>&#9656; System Methodological Limitations &amp; Disclosures (Click to Expand)</summary>
+                <ul>
+                    <li><strong>Single-Speaker Enrollment</strong>: Calibrated specifically against target speaker (<code>gokul</code>). Multi-speaker false acceptance rates require larger multi-speaker corpora.</li>
+                    <li><strong>AASIST Spoof Disabled</strong>: Pretrained AASIST is disabled in production (<code>weight: 0.0</code>) due to severe acoustic domain shift on non-studio consumer microphones (<code>cause not measured</code>).</li>
+                    <li><strong>Replay Channel Confound</strong>: Replay detector was trained on clips recorded with a single phone and loudspeaker; open-world acoustic replay generalization remains an ongoing research challenge.</li>
+                    <li><strong>Exhibition Simulation</strong>: This interface demonstrates telephony risk engine evaluation under software simulation; it is not connected to live carrier PSTN telephone lines.</li>
+                </ul>
+            </details>
+
+        </main>
+    </div>
+
+    <!-- Bottom Sticky Action Bar -->
+    <footer class="bottom-action-bar">
+        <div class="action-left">
+            <button id="btnReviewAudio" class="btn" style="background: #1e293b; color: #fff; border: 1px solid #334155; padding: 8px 14px;" onclick="toggleAudioPlayback()">
+                &#9658; Review audio
+            </button>
+            <div id="verdictBanner" class="action-verdict verdict-allow">
+                No action: Allow
+            </div>
+            <div id="humanReviewChip" class="human-review-chip" style="display: none;">
+                Needs human review
+            </div>
+        </div>
+        <div class="disclaimer-subtext">
+            Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the clip is genuine.
+        </div>
+        <div>
+            <button id="btnDownloadJson" class="btn" style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 8px 14px;" onclick="downloadResultJson()">
+                &#x2913; Download result (JSON, no audio)
+            </button>
+        </div>
+    </footer>
+
+    <!-- Audio Player Element (Browser Local Only) -->
+    <audio id="coreAudioPlayer" style="display: none;"></audio>
+
+    <script>
+        // State
+        let publicConfig = { a: 0.3364, b: 0.4169, bands: { low_max: 0.3, medium_max: 0.6 }, sustained_evidence: { consecutive_windows_required: 3 } };
+        let activeScenario = null;
+        let activeAudioBuffer = null;
+        let audioContext = null;
+        let isPlaying = false;
+        let playheadTimer = null;
+        let audioStartTime = 0;
+        let currentWindows = [];
+        let lastAnalysisResult = null;
+        let ws = null;
+        let reconnectDelay = 1000;
+
+        // Fetch public config
+        async function fetchPublicConfig() {
+            try {
+                const res = await fetch("/config/public");
+                if (res.ok) {
+                    publicConfig = await res.json();
+                }
+            } catch (e) {
+                console.warn("Could not load /config/public, using fallback defaults", e);
+            }
+        }
+        fetchPublicConfig();
+
+        // Switch Navigation
+        function switchNav(panel) {
+            document.querySelectorAll(".nav-icon-btn").forEach(b => b.classList.remove("active"));
+            const targetBtn = Array.from(document.querySelectorAll(".nav-icon-btn")).find(b => b.textContent.toLowerCase().includes(panel));
+            if (targetBtn) targetBtn.classList.add("active");
+
+            document.getElementById("breadcrumbSection").textContent = panel.charAt(0).toUpperCase() + panel.slice(1);
+
+            const demoCard = document.getElementById("demoPanelCard");
+            const uploadCard = document.getElementById("uploadPanelCard");
+            const auditCard = document.getElementById("auditPanelCard");
+
+            if (panel === "overview") {
+                demoCard.style.display = "block";
+                uploadCard.style.display = "block";
+                auditCard.style.display = "block";
+            } else if (panel === "demo") {
+                demoCard.style.display = "block";
+                uploadCard.style.display = "none";
+                auditCard.style.display = "none";
+            } else if (panel === "upload") {
+                demoCard.style.display = "none";
+                uploadCard.style.display = "block";
+                auditCard.style.display = "none";
+            } else if (panel === "audit") {
+                demoCard.style.display = "none";
+                uploadCard.style.display = "none";
+                auditCard.style.display = "block";
+            } else {
+                demoCard.style.display = "block";
+                uploadCard.style.display = "block";
+                auditCard.style.display = "block";
+            }
+        }
+
+        // Initialize WebSocket with auto-reconnect
+        function initWebSocket() {
+            const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${proto}//${window.location.host}/dashboard-ws`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                const conn = document.getElementById("connStatus");
+                conn.textContent = "CONNECTED";
+                conn.className = "status-chip chip-live";
+                reconnectDelay = 1000;
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = jsonParseSafe(event.data);
+                    if (data) handleWindowTelemetry(data);
+                } catch (e) {
+                    console.error("WS error:", e);
+                }
+            };
+
+            ws.onclose = () => {
+                const conn = document.getElementById("connStatus");
+                conn.textContent = "RECONNECTING";
+                conn.className = "status-chip chip-recon";
+                setTimeout(initWebSocket, reconnectDelay);
+                reconnectDelay = Math.min(reconnectDelay * 1.5, 10000);
+            };
+        }
+        initWebSocket();
+
+        function jsonParseSafe(str) {
+            try { return JSON.parse(str); } catch { return null; }
+        }
+
+        // Web Audio Context initialization
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === "suspended") {
+                audioContext.resume();
+            }
+            return audioContext;
+        }
+
+        // Load Scenarios
+        async function loadScenarios() {
+            try {
+                const res = await fetch("/demo/scenarios");
+                const data = await res.json();
+                const sel = document.getElementById("scenarioSelect");
+                sel.innerHTML = '<option value="">-- Choose an allowlisted scenario --</option>';
+                data.scenarios.forEach(s => {
+                    const opt = document.createElement("option");
+                    opt.value = s.id;
+                    opt.textContent = `${s.id}: ${s.title} (${s.group})`;
+                    sel.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("Failed to load demo scenarios", e);
+            }
+        }
+        loadScenarios();
+
+        document.getElementById("scenarioSelect").addEventListener("change", async (e) => {
+            const sid = e.target.value;
+            if (!sid) return;
+            activeScenario = sid;
+            document.getElementById("activeAudioSourceLabel").textContent = `Demo: ${sid}`;
+            document.getElementById("detailSource").textContent = `demo: ${sid}`;
+
+            // Load and decode audio browser-side for waveform
+            loadAndDecodeAudio(`/demo/audio/${sid}`);
+            // Fetch mel-spectrogram
+            fetchSpectrogram(`/demo/spectrogram/${sid}`);
+        });
+
+        // Load & Decode audio browser-side (never uploaded audio sent back)
+        async function loadAndDecodeAudio(url) {
+            try {
+                const ctx = getAudioContext();
+                const resp = await fetch(url);
+                const arrayBuffer = await resp.arrayBuffer();
+                audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+                    activeAudioBuffer = buffer;
+                    const dur = buffer.duration;
+                    document.getElementById("detailDuration").textContent = `${dur.toFixed(2)}s`;
+                    document.getElementById("audioTimeReadout").textContent = `00:00 / ${formatTime(dur)}`;
+                    drawWaveform(buffer);
+                    const aud = document.getElementById("coreAudioPlayer");
+                    aud.src = url;
+                });
+            } catch (e) {
+                console.warn("Waveform decode error:", e);
+            }
+        }
+
+        async function fetchSpectrogram(url) {
+            try {
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.mel_matrix) {
+                        drawSpectrogram(data.mel_matrix, data.duration_sec || 0);
+                    }
+                }
+            } catch (e) {
+                console.warn("Spectrogram fetch error:", e);
+            }
+        }
+
+        // Draw Waveform on Canvas
+        function drawWaveform(audioBuf) {
+            const canvas = document.getElementById("waveformCanvas");
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const rawData = audioBuf.getChannelData(0);
+            const step = Math.ceil(rawData.length / width);
+            const amp = height / 2;
+
+            ctx.fillStyle = "#070e1c";
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw center guide
+            ctx.strokeStyle = "rgba(30, 41, 59, 0.8)";
+            ctx.beginPath();
+            ctx.moveTo(0, amp);
+            ctx.lineTo(width, amp);
+            ctx.stroke();
+
+            // Draw wave
+            ctx.fillStyle = "#14b8a6";
+            for (let i = 0; i < width; i++) {
+                let min = 1.0;
+                let max = -1.0;
+                for (let j = 0; j < step; j++) {
+                    const datum = rawData[(i * step) + j];
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
+                }
+                const y1 = (1 + min) * amp;
+                const y2 = (1 + max) * amp;
+                ctx.fillRect(i, y1, 1, Math.max(1, y2 - y1));
+            }
+
+            // Draw window markers if available
+            drawMarkersOnCanvas(ctx, width, height, audioBuf.duration);
+        }
+
+        // Draw Mel-Spectrogram on Canvas
+        function drawSpectrogram(melMatrix, duration) {
+            const canvas = document.getElementById("spectrogramCanvas");
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const nMels = melMatrix.length;
+            if (nMels === 0) return;
+            const nFrames = melMatrix[0].length;
+
+            const colW = width / nFrames;
+            const rowH = height / nMels;
+
+            for (let m = 0; m < nMels; m++) {
+                const y = height - ((m + 1) * rowH); // Low freq at bottom
+                for (let f = 0; f < nFrames; f++) {
+                    const val = melMatrix[m][f]; // int8 in [-128, 127]
+                    const norm = (val + 128) / 255.0; // [0, 1]
+                    // Palette: dark navy -> teal -> amber
+                    const r = Math.floor(norm * 245);
+                    const g = Math.floor(Math.sin(norm * Math.PI) * 184 + 10);
+                    const b = Math.floor((1 - norm) * 166 + 30);
+                    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.fillRect(f * colW, y, Math.ceil(colW), Math.ceil(rowH));
+                }
+            }
+
+            document.getElementById("specDurationLabel").textContent = `${duration.toFixed(1)}s`;
+            // Draw window markers on spectrogram
+            drawMarkersOnCanvas(ctx, width, height, duration);
+        }
+
+        function drawMarkersOnCanvas(ctx, width, height, duration) {
+            if (!duration || duration <= 0) return;
+            currentWindows.forEach(w => {
+                if (w.action_trigger || w.action_taken || w.band_changed) {
+                    const sec = (w.window || w.window_index || 1) * 1.0;
+                    const x = (sec / duration) * width;
+                    ctx.strokeStyle = w.action_trigger === "block" ? "#ef4444" : "#f59e0b";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Draw Mini Charts for Speaker and Replay trends
+        function drawTrendChart(canvasId, values, color, minVal, maxVal) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.fillStyle = "#070e1c";
+            ctx.fillRect(0, 0, w, h);
+
+            if (!values || values.length === 0) return;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const n = values.length;
+            const stepX = n > 1 ? (w - 16) / (n - 1) : 0;
+
+            values.forEach((v, idx) => {
+                const normY = (v - minVal) / (maxVal - minVal + 1e-6);
+                const clampedNorm = Math.max(0, Math.min(1, normY));
+                const y = h - 8 - (clampedNorm * (h - 16));
+                const x = 8 + (idx * stepX);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Point dots
+            ctx.fillStyle = color;
+            values.forEach((v, idx) => {
+                const normY = (v - minVal) / (maxVal - minVal + 1e-6);
+                const clampedNorm = Math.max(0, Math.min(1, normY));
+                const y = h - 8 - (clampedNorm * (h - 16));
+                const x = 8 + (idx * stepX);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        // Audio Play/Pause
+        function toggleAudioPlayback() {
+            const aud = document.getElementById("coreAudioPlayer");
+            const btn = document.getElementById("playPauseBtn");
+            const revBtn = document.getElementById("btnReviewAudio");
+            if (!aud.src) return;
+
+            if (aud.paused) {
+                aud.play();
+                btn.innerHTML = "&#10074;&#10074;";
+                revBtn.innerHTML = "&#10074;&#10074; Pause audio";
+                playheadTimer = setInterval(updatePlayhead, 100);
+            } else {
+                aud.pause();
+                btn.innerHTML = "&#9658;";
+                revBtn.innerHTML = "&#9658; Review audio";
+                clearInterval(playheadTimer);
+            }
+        }
+
+        function updatePlayhead() {
+            const aud = document.getElementById("coreAudioPlayer");
+            if (!aud || !aud.duration) return;
+            const cur = aud.currentTime;
+            const tot = aud.duration;
+            document.getElementById("audioTimeReadout").textContent = `${formatTime(cur)} / ${formatTime(tot)}`;
+            if (aud.ended) {
+                document.getElementById("playPauseBtn").innerHTML = "&#9658;";
+                document.getElementById("btnReviewAudio").innerHTML = "&#9658; Review audio";
+                clearInterval(playheadTimer);
+            }
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // Start Demo
+        async function startDemo() {
+            const scenarioId = document.getElementById("scenarioSelect").value;
+            if (!scenarioId) return alert("Select a scenario");
+            const sens = document.getElementById("sensitivitySelect").value;
+            const speed = document.getElementById("speedSelect").value;
+
+            currentWindows = [];
+            document.getElementById("btnStart").disabled = true;
+            document.getElementById("btnStop").disabled = false;
+            document.getElementById("detailSensitivity").textContent = `${sens}`;
+
+            try {
+                const res = await fetch("/demo/run", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ scenario_id: scenarioId, action_sensitivity: sens, speed: parseFloat(speed) })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert("Error starting demo: " + (err.error || "Unknown"));
+                    document.getElementById("btnStart").disabled = false;
+                    document.getElementById("btnStop").disabled = true;
+                }
+            } catch (e) {
+                alert("Failed: " + e.message);
+                document.getElementById("btnStart").disabled = false;
+                document.getElementById("btnStop").disabled = true;
+            }
+        }
+
+        async function stopDemo() {
+            try {
+                await fetch("/demo/stop", { method: "POST" });
+            } finally {
+                document.getElementById("btnStart").disabled = false;
+                document.getElementById("btnStop").disabled = true;
+            }
+        }
+
+        // Handle Real-Time Window Telemetry
+        function handleWindowTelemetry(ev) {
+            currentWindows.push(ev);
+            lastAnalysisResult = ev;
+
+            // Risk & Decision
+            const risk = ev.risk || 0.0;
+            const band = ev.band || "LOW";
+            const decision = ev.decision || "Allow";
+
+            document.getElementById("riskScoreVal").textContent = risk.toFixed(2);
+            document.getElementById("riskDecisionVal").textContent = decision;
+            document.getElementById("riskBandChip").textContent = band;
+
+            const bar = document.getElementById("riskProgressBar");
+            bar.style.width = `${Math.min(100, Math.max(0, risk * 100))}%`;
+            if (band === "HIGH") {
+                bar.style.background = "var(--red)";
+                document.getElementById("riskBandChip").className = "chip chip-block";
+            } else if (band === "MEDIUM") {
+                bar.style.background = "var(--amber)";
+                document.getElementById("riskBandChip").className = "chip chip-warn";
+            } else {
+                bar.style.background = "var(--green)";
+                document.getElementById("riskBandChip").className = "chip chip-allow";
+            }
+
+            // Detectors
+            const spk = ev.detector_scores?.speaker_sim;
+            const rep = ev.detector_scores?.replay_prob;
+
+            if (spk !== undefined && spk !== null) {
+                document.getElementById("speakerCosineVal").textContent = spk.toFixed(2);
+                document.getElementById("detRowSpeakerVal").textContent = spk.toFixed(2);
+
+                const a = publicConfig.a;
+                const b = publicConfig.b;
+                const pct = Math.max(0, Math.min(100, Math.round(((spk - a) / (b - a)) * 100)));
+                document.getElementById("speakerMatchPct").textContent = `${pct}%`;
+                document.getElementById("speakerBarFill").style.width = `${pct}%`;
+
+                if (pct >= 50) {
+                    document.getElementById("detRowSpeakerChip").textContent = "MATCH";
+                    document.getElementById("detRowSpeakerChip").className = "chip chip-allow";
+                } else {
+                    document.getElementById("detRowSpeakerChip").textContent = "LOW SIM";
+                    document.getElementById("detRowSpeakerChip").className = "chip chip-warn";
+                }
+            }
+
+            if (rep !== undefined && rep !== null) {
+                document.getElementById("replayProbVal").textContent = rep.toFixed(2);
+                document.getElementById("detRowReplayVal").textContent = rep.toFixed(2);
+                const rChip = document.getElementById("replayChip");
+                const rRowChip = document.getElementById("detRowReplayChip");
+                if (rep >= 0.60) {
+                    rChip.textContent = "HIGH"; rChip.className = "chip chip-block";
+                    rRowChip.textContent = "HIGH"; rRowChip.className = "chip chip-block";
+                } else if (rep >= 0.30) {
+                    rChip.textContent = "MEDIUM"; rChip.className = "chip chip-warn";
+                    rRowChip.textContent = "MEDIUM"; rRowChip.className = "chip chip-warn";
+                } else {
+                    rChip.textContent = "LOW"; rChip.className = "chip chip-allow";
+                    rRowChip.textContent = "LOW"; rRowChip.className = "chip chip-allow";
+                }
+            }
+
+            // Update Trend Charts
+            const spkValues = currentWindows.map(w => w.detector_scores?.speaker_sim).filter(v => v !== undefined && v !== null);
+            drawTrendChart("speakerChartCanvas", spkValues, "#14b8a6", 0.0, 0.8);
+
+            const repValues = currentWindows.map(w => w.detector_scores?.replay_prob).filter(v => v !== undefined && v !== null);
+            drawTrendChart("replayChartCanvas", repValues, "#f59e0b", 0.0, 1.0);
+
+            // Details
+            document.getElementById("detailWindows").textContent = `${currentWindows.length} scored / 0 skipped`;
+            if (ev.call_sid) document.getElementById("detailCallSid").textContent = ev.call_sid;
+
+            // Scenario status & match
+            if (ev.expected_outcome) document.getElementById("expectedLabel").textContent = `Expected: ${ev.expected_outcome}`;
+            if (ev.outcome) document.getElementById("outcomeLabel").textContent = `Outcome: ${ev.outcome}`;
+            document.getElementById("bandLabel").textContent = `Final Band: ${band}`;
+
+            const mPill = document.getElementById("matchPill");
+            if (ev.match !== undefined) {
+                mPill.style.display = "inline-block";
+                if (ev.match) {
+                    mPill.textContent = "MATCH";
+                    mPill.className = "status-pill pill-match";
+                } else {
+                    mPill.textContent = `MISMATCH: ${ev.discrepancy || 'flagged'}`;
+                    mPill.className = "status-pill pill-mismatch";
+                }
+            }
+
+            // Bottom Action Bar Verdict Banner & Human Review Chip
+            const outcome = ev.outcome || (band === "HIGH" ? "Block" : (band === "MEDIUM" ? "Step-up only" : "Allow"));
+            updateBottomVerdict(outcome);
+
+            // Event markers for waveform
+            updateEventMarkersList();
+
+            // Append to audit table
+            appendAuditRow(ev);
+
+            // Re-render markers if audio buffer loaded
+            if (activeAudioBuffer) {
+                const canvas = document.getElementById("waveformCanvas");
+                const ctx = canvas.getContext("2d");
+                drawMarkersOnCanvas(ctx, canvas.width, canvas.height, activeAudioBuffer.duration);
+            }
+        }
+
+        function updateBottomVerdict(outcome) {
+            const vBanner = document.getElementById("verdictBanner");
+            const hrChip = document.getElementById("humanReviewChip");
+
+            if (outcome === "Block" || outcome.toLowerCase().includes("block")) {
+                vBanner.textContent = "Suspicious: Block";
+                vBanner.className = "action-verdict verdict-block";
+                hrChip.style.display = "inline-block";
+            } else if (outcome.toLowerCase().includes("step-up") || outcome.toLowerCase().includes("otp")) {
+                vBanner.textContent = "Suspicious: Step-up (mock OTP)";
+                vBanner.className = "action-verdict verdict-stepup";
+                hrChip.style.display = "inline-block";
+            } else {
+                vBanner.textContent = "No action: Allow";
+                vBanner.className = "action-verdict verdict-allow";
+                hrChip.style.display = "none";
+            }
+        }
+
+        function updateEventMarkersList() {
+            const markers = [];
+            currentWindows.forEach(w => {
+                if (w.action_trigger === "step_up" || w.action_taken === "MOCK OTP") {
+                    markers.push(`<span class="marker-tag" style="background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber);">step-up fired</span>`);
+                } else if (w.action_trigger === "block" || w.action_taken === "Block") {
+                    markers.push(`<span class="marker-tag" style="background: var(--red-dim); color: var(--red); border: 1px solid var(--red);">block fired</span>`);
+                }
+            });
+            document.getElementById("markersList").innerHTML = markers.length > 0 ? markers.join(" ") : "None";
+        }
+
+        function appendAuditRow(ev) {
+            const tbody = document.getElementById("auditTableBody");
+            if (tbody.children.length === 1 && tbody.children[0].children.length === 1) {
+                tbody.innerHTML = "";
+            }
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="mono">${ev.call_sid || '--'}</td>
+                <td class="mono">${ev.window || ev.window_index || '--'}</td>
+                <td class="mono">${(ev.risk || 0.0).toFixed(4)}</td>
+                <td><span class="chip ${ev.band === 'HIGH' ? 'chip-block' : (ev.band === 'MEDIUM' ? 'chip-warn' : 'chip-allow')}">${ev.band || 'LOW'}</span></td>
+                <td>${ev.decision || 'Allow'}</td>
+                <td class="mono">${ev.action_trigger || ev.action_taken || 'none'}</td>
+                <td class="mono">${ev.latency_ms || 2.1}ms</td>
+                <td class="mono" style="font-size: 10px;">${(ev.record_hash || 'hash_chain').substring(0, 16)}...</td>
+            `;
+            tbody.insertBefore(tr, tbody.firstChild);
+            if (tbody.children.length > 20) tbody.removeChild(tbody.lastChild);
+        }
+
+        // Upload File Handling
+        const dropZone = document.getElementById("dropZone");
+        const fileInput = document.getElementById("uploadFileInput");
+        let selectedUploadFile = null;
+
+        dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
+        dropZone.addEventListener("dragleave", () => { dropZone.classList.remove("dragover"); });
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("dragover");
+            if (e.dataTransfer.files.length > 0) selectFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener("change", (e) => {
+            if (e.target.files.length > 0) selectFile(e.target.files[0]);
+        });
+
+        function selectFile(file) {
+            selectedUploadFile = file;
+            document.getElementById("fileName").textContent = file.name;
+            document.getElementById("fileSize").textContent = `${Math.round(file.size / 1024)} KB`;
+            document.getElementById("fileInfoBadge").style.display = "inline-flex";
+            document.getElementById("activeAudioSourceLabel").textContent = `Upload: ${file.name}`;
+            document.getElementById("detailSource").textContent = `uploaded file: ${file.name}`;
+
+            // Decode uploaded file browser-side with Web Audio API for waveform (never send back from server)
+            const reader = new FileReader();
+            reader.onload = () => {
+                const ctx = getAudioContext();
+                ctx.decodeAudioData(reader.result, (buf) => {
+                    activeAudioBuffer = buf;
+                    document.getElementById("detailDuration").textContent = `${buf.duration.toFixed(2)}s`;
+                    document.getElementById("audioTimeReadout").textContent = `00:00 / ${formatTime(buf.duration)}`;
+                    drawWaveform(buf);
+                    const aud = document.getElementById("coreAudioPlayer");
+                    aud.src = URL.createObjectURL(file);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function analyseUploadedFile() {
+            if (!selectedUploadFile) return alert("Select an audio file first");
+            const btn = document.getElementById("btnAnalyseUpload");
+            const prog = document.getElementById("uploadProgress");
+            const errBox = document.getElementById("uploadError");
+            errBox.style.display = "none";
+            prog.style.display = "flex";
+            btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append("file", selectedUploadFile);
+            fd.append("action_sensitivity", document.getElementById("uploadSensitivitySelect").value);
+            fd.append("mode", document.getElementById("uploadModeSelect").value);
+            fd.append("phone_sim", document.getElementById("uploadPhoneSim").checked ? "true" : "false");
+
+            try {
+                const res = await fetch("/analyze/upload", { method: "POST", body: fd });
+                const data = await res.json();
+                if (!res.ok) {
+                    errBox.textContent = data.error || "Upload analysis failed";
+                    errBox.style.display = "block";
+                    return;
+                }
+                lastAnalysisResult = data;
+                currentWindows = data.windows || [];
+
+                // Render spectrogram if attached
+                if (data.spectrogram && data.spectrogram.mel_matrix) {
+                    drawSpectrogram(data.spectrogram.mel_matrix, data.duration || activeAudioBuffer?.duration || 0);
+                }
+
+                // Render latest window as telemetry
+                const lastWin = currentWindows.length > 0 ? currentWindows[currentWindows.length - 1] : {
+                    risk: data.risk,
+                    band: data.band,
+                    decision: data.outcome,
+                    call_sid: data.call_sid,
+                    detector_scores: data.detector_scores
+                };
+                lastWin.outcome = data.outcome;
+                handleWindowTelemetry(lastWin);
+
+                // Warnings
+                const warnBox = document.getElementById("uploadWarningsBox");
+                const warnList = document.getElementById("uploadWarningsList");
+                if (data.warnings && data.warnings.length > 0) {
+                    warnList.innerHTML = data.warnings.map(w => `<li>${w}</li>`).join("");
+                    warnBox.style.display = "block";
+                } else {
+                    warnBox.style.display = "none";
+                }
+
+            } catch (e) {
+                errBox.textContent = "Request failed: " + e.message;
+                errBox.style.display = "block";
+            } finally {
+                prog.style.display = "none";
+                btn.disabled = false;
+            }
+        }
+
+        // Download JSON Result (no audio)
+        function downloadResultJson() {
+            if (!lastAnalysisResult) return alert("Run an analysis or demo first to download JSON");
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                simulation_label: "SIMULATION, not a live call",
+                disclaimer: "Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the clip is genuine.",
+                result: lastAnalysisResult,
+                windows_scored: currentWindows
+            };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `voiceguard_analysis_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

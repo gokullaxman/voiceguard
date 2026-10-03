@@ -1,0 +1,3 @@
+live:
+  dry_mode: true
+  min_speech_fraction: 0.30
