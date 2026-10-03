@@ -5,9 +5,10 @@ Script to generate docs/EVALUATION.md from scratch/fused_eval.json and empirical
 import os
 import json
 
-FUSED_JSON_PATH = r"C:\Users\Dell Latitude 7410\.gemini\antigravity-ide\brain\a18e2a80-1a10-459f-9aac-6edb5b242e63\scratch\fused_eval.json"
+FUSED_JSON_PATH = "scratch/fused_eval.json"
 MANIFEST_PATH = "data/metadata/manifest.json"
 DOC_PATH = "docs/EVALUATION.md"
+SPOOF_CALIB_PATH = "models/artifacts/spoof_calibration.json"
 
 os.makedirs("docs", exist_ok=True)
 
@@ -50,12 +51,19 @@ lines.append("- **Architecture**: AASIST Graph Attention Network (vendored PyTor
 lines.append("- **ASVspoof 2019 LA Ground Truth**: Bonafide median `0.000023`, Spoof median `0.999960`.")
 lines.append("- **Acoustic Domain Shift Finding**: On live laptop microphone clips, AASIST outputs median `0.975570` (imported) and `0.993499` (simulated), causing severe false rejections under direct deployment.")
 lines.append("")
-lines.append("### B. Speaker Verification (ECAPA-TDNN)")
+lines.append("### B. AASIST Recalibration & Display Modes")
+lines.append("- **Modes**: `off` (default, suppressed), `real` (raw output, uncalibrated), `calibrated` (recalibrated logistic regression).")
+lines.append("- **Calibration Parameters**: `weight = -0.259134`, `intercept = 1.911943` fit on 31 usable clips (9 excluded for duration < 4.0375s).")
+lines.append("- **Disclosure Label**: `\"AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision.\"`")
+lines.append("- **Critical Boundary**: *Fit on the evaluation data, one speaker, optimistic; direction of the effect is opposite to the original AASIST convention on our recordings (cause not measured).*")
+lines.append("- **Risk Engine Isolation**: Recalibrated spoof strictly does not enter the risk engine; decision, band, streaks, and outcome remain 100% byte-identical across all three modes.")
+lines.append("")
+lines.append("### C. Speaker Verification (ECAPA-TDNN)")
 lines.append("- **Architecture**: Pretrained SpeechBrain ECAPA-TDNN (192-dim cosine similarity).")
 lines.append("- **Separation**: Genuine live median similarity = `0.4169`, Attack median similarity = `0.3364`.")
 lines.append("- **Limitation**: When evaluated standalone without replay detection, attacks achieve 33% false grant rate because replayed speech retains the legitimate speaker's voice.")
 lines.append("")
-lines.append("### C. Acoustic Replay Detector")
+lines.append("### D. Acoustic Replay Detector")
 lines.append("- **Architecture**: Gain-normalized acoustic spectral features (standardized log-mel, sub-band energy ratios, rolloff, flatness) + Logistic Regression.")
 lines.append("- **Cross-Validation**: 5-fold grouped leave-one-group-out CV achieves out-of-fold AUC = `1.0000`.")
 lines.append("- **Confound Audit**: Perfect separation persists across level-only, band-ratio-only, and RMS-normalized audio, indicating the model learns the distinct acoustic transmission channel between phone-mic recordings and loudspeaker playback.")

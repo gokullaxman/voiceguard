@@ -231,9 +231,13 @@ class DemoRunner:
         call_sid = f"CA_demo_{scenario_id}_{int(time.time())}"
         stream_sid = f"MZ_demo_{scenario_id}_{int(time.time())}"
         self.current_call_sid = call_sid
-
         frames = self.load_audio_frames(scenario["file_path"])
-        session = StreamingSession(
+        import importlib
+        import server.streaming
+        importlib.reload(server.streaming)
+        StreamingSessionClass = server.streaming.StreamingSession
+
+        session = StreamingSessionClass(
             call_sid=call_sid,
             stream_sid=stream_sid,
             use_spoof=False,
@@ -288,12 +292,24 @@ class DemoRunner:
                             ev["action_display"] = "Allow"
                             ev["action_taken"] = None
 
-                        # Synthetic spoof is OFF due to measured domain shift
-                        if "detector_scores" in ev:
-                            ev["detector_scores"]["spoof"] = "OFF (domain shift, see limitations)"
-                            ev["detector_scores"].pop("spoof_prob", None)
-                        ev["spoof_status"] = "OFF (domain shift, see limitations)"
-                        ev.pop("spoof_prob", None)
+                        # Handle synthetic spoof based on session display mode
+                        disp_mode = getattr(session, "display_mode", "off")
+                        if disp_mode == "off":
+                            if "detector_scores" in ev:
+                                ev["detector_scores"]["spoof"] = "OFF (domain shift, see limitations)"
+                                ev["detector_scores"].pop("spoof_prob", None)
+                            ev["spoof_status"] = "OFF (domain shift, see limitations)"
+                            ev.pop("spoof_prob", None)
+                        elif disp_mode == "calibrated":
+                            ev.pop("spoof_prob", None)
+                            if "detector_scores" in ev:
+                                ev["detector_scores"].pop("spoof_prob", None)
+                            ev["spoof_status"] = "AASIST output recalibrated (experimental)"
+                        elif disp_mode == "real":
+                            ev.pop("spoof_prob", None)
+                            if "detector_scores" in ev:
+                                ev["detector_scores"].pop("spoof_prob", None)
+                            ev["spoof_status"] = "AASIST raw (experimental)"
 
                         # Outcome and match evaluated across whole stream so far
                         curr_outcome = compute_stream_outcome(actions_fired)

@@ -43,8 +43,9 @@ switch ($Command) {
     "demo" {
         Write-Host "=== Starting VoiceGuard Exhibition Demo Server [SIMULATION, not a live call] ===" -ForegroundColor Cyan
         Write-Host "Opening http://localhost:8000 in your browser..." -ForegroundColor Yellow
+        $env:VOICEGUARD_SPOOF_DISPLAY = "calibrated"
         Start-Process "http://localhost:8000"
-        uv run uvicorn server.app:app --host 0.0.0.0 --port 8000
+        uv run uvicorn server.app:app --host 0.0.0.0 --port 8000 --reload
     }
     "preflight" {
         Write-Host "=== Running VoiceGuard Preflight Health Checks ===" -ForegroundColor Cyan

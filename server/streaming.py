@@ -56,6 +56,26 @@ class AudioRollingBuffer:
         return self.buffer[-valid_len:].copy()
 
 
+def get_spoof_display_mode() -> str:
+    env_mode = os.environ.get("VOICEGUARD_SPOOF_DISPLAY")
+    if env_mode:
+        m = env_mode.lower().strip()
+        if m in ("off", "real", "calibrated"):
+            return m
+    try:
+        import yaml
+        if os.path.exists("config/live.yaml"):
+            with open("config/live.yaml", "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f) or {}
+                if "spoof" in cfg and "display_mode" in cfg["spoof"]:
+                    m = str(cfg["spoof"]["display_mode"]).lower().strip()
+                    if m in ("off", "real", "calibrated"):
+                        return m
+    except Exception:
+        pass
+    return "off"
+
+
 class StreamingSession:
     """
     Manages state for an active telephony call stream.
@@ -77,6 +97,17 @@ class StreamingSession:
         self.sustained_evidence = SustainedEvidence(consecutive_required=3, threshold=0.60)
         self.audit_logger = audit_logger or AuditLogger()
         self.use_spoof = use_spoof
+        self.display_mode = get_spoof_display_mode()
+
+        # Load calibration parameters if present
+        self.spoof_calibration = None
+        calib_path = "models/artifacts/spoof_calibration.json"
+        if os.path.exists(calib_path):
+            try:
+                with open(calib_path, "r", encoding="utf-8") as f:
+                    self.spoof_calibration = json.load(f)
+            except Exception:
+                pass
 
         # Load enrolled voiceprint
         self.enrolled_embedding = None
@@ -92,7 +123,16 @@ class StreamingSession:
         # Detectors
         self.speaker_detector = ECAPASpeakerDetector(device="cpu")
         self.replay_detector = AcousticReplayDetector()
-        self.spoof_detector = AASISTSpoofDetector(device="cpu") if self.use_spoof else None
+        
+        # In calibrated or real mode, spoof detector must be initialized for display
+        if self.use_spoof or self.display_mode in ("calibrated", "real"):
+            try:
+                self.spoof_detector = AASISTSpoofDetector(device="cpu")
+            except Exception as e:
+                self.spoof_detector = None
+                print(f"[StreamingSession] Warning: failed to load AASIST detector: {e}")
+        else:
+            self.spoof_detector = None
 
         # VAD & Diagnostics
         self.vad = VoiceActivityDetector(backend="webrtcvad", mode=2)
@@ -159,14 +199,38 @@ class StreamingSession:
         # 2. Replay detector
         replay_prob, _ = self.replay_detector.score(audio)
 
-        # 3. Spoof detector
-        spoof_prob = None
-        if self.use_spoof and self.spoof_detector is not None and len(audio) >= 64600:
-            spoof_prob, _ = self.spoof_detector.score(audio)
+        # 3. Spoof detector (DISPLAY ONLY - NEVER enters risk engine)
+        spoof_calibrated_exp = None
+        raw_spoof_prob = None
+        if self.display_mode in ("calibrated", "real") and self.spoof_detector is not None:
+            if len(audio) >= 32000:
+                if len(audio) < 64600:
+                    repeats = int(np.ceil(64600 / len(audio)))
+                    audio_for_spoof = np.tile(audio, repeats)[:64600]
+                else:
+                    audio_for_spoof = audio[-64600:]
 
-        # 4. Risk fusion
+                raw_p, raw_logits, _ = self.spoof_detector.score(audio_for_spoof, return_logits=True)
+                raw_spoof_prob = raw_p
+                if self.display_mode == "calibrated" and self.spoof_calibration and raw_logits is not None:
+                    diff = float(raw_logits[0] - raw_logits[1])
+                    w = float(self.spoof_calibration.get("weight", -0.504017))
+                    b = float(self.spoof_calibration.get("intercept", 1.285819))
+                    cal_val = float(1.0 / (1.0 + np.exp(-(w * diff + b))))
+                    cal_val = max(0.0, min(1.0, cal_val))
+                    spoof_calibrated_exp = {
+                        "value": round(cal_val, 4),
+                        "label": "AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision."
+                    }
+            elif self.display_mode == "calibrated":
+                spoof_calibrated_exp = {
+                    "value": None,
+                    "label": "AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision."
+                }
+
+        # 4. Risk fusion - spoof_prob is ALWAYS None! The value must NOT enter the risk engine.
         risk_res = self.risk_engine.compute_risk(
-            spoof_prob=spoof_prob,
+            spoof_prob=None,
             speaker_sim=speaker_sim,
             replay_prob=replay_prob,
             context=context
@@ -188,13 +252,26 @@ class StreamingSession:
         scores_dict = {
             "speaker_sim": round(speaker_sim, 4) if speaker_sim is not None else None,
             "replay_prob": round(replay_prob, 4) if replay_prob is not None else None,
-            "spoof_prob": round(spoof_prob, 4) if spoof_prob is not None else None
         }
+        if self.display_mode == "off":
+            scores_dict["spoof"] = "OFF (domain shift, see limitations)"
+        elif self.display_mode == "real":
+            scores_dict["spoof_real_experimental"] = {
+                "value": round(raw_spoof_prob, 4) if raw_spoof_prob is not None else None,
+                "label": "Raw AASIST output (uncalibrated, domain shifted). Display only, not used in decision."
+            }
+        elif self.display_mode == "calibrated":
+            scores_dict["spoof_calibrated_experimental"] = spoof_calibrated_exp
 
-        # 6. Audit record
+        # 6. Audit record - detector_scores entering audit chain (consistent across modes)
+        audit_detector_scores = {
+            "speaker_sim": round(speaker_sim, 4) if speaker_sim is not None else None,
+            "replay_prob": round(replay_prob, 4) if replay_prob is not None else None,
+            "spoof": "OFF (domain shift, see limitations)"
+        }
         audit_record = self.audit_logger.log_event(
             call_sid=self.call_sid,
-            detector_scores=scores_dict,
+            detector_scores=audit_detector_scores,
             context=context,
             risk=final_risk,
             band=band,
@@ -233,4 +310,11 @@ class StreamingSession:
             "latency_ms": round(latency_ms, 2),
             "record_hash": audit_record["record_hash"]
         }
+        if self.display_mode == "calibrated" and spoof_calibrated_exp is not None:
+            result["spoof_calibrated_experimental"] = spoof_calibrated_exp
+        elif self.display_mode == "real" and raw_spoof_prob is not None:
+            result["spoof_real_experimental"] = {
+                "value": round(raw_spoof_prob, 4),
+                "label": "Raw AASIST output (uncalibrated, domain shifted). Display only, not used in decision."
+            }
         return result

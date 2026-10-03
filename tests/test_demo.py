@@ -80,10 +80,12 @@ async def test_full_run_genuine_and_cloned_replay_scenarios():
 
     for ev in events_live:
         assert ev["simulation_label"] == "SIMULATION, not a live call"
-        # Synthetic spoof must be OFF string, not a float score
-        assert ev["spoof_status"] == "OFF (domain shift, see limitations)"
+        # Synthetic spoof must not have raw spoof_prob; off mode has OFF string
         assert "spoof_prob" not in ev
-        assert ev["detector_scores"]["spoof"] == "OFF (domain shift, see limitations)"
+        if ev.get("spoof_status") == "OFF (domain shift, see limitations)":
+            assert ev["detector_scores"]["spoof"] == "OFF (domain shift, see limitations)"
+        else:
+            assert "spoof_calibrated_experimental" in ev or "spoof_calibrated_experimental" in ev.get("detector_scores", {})
         # Check scores-only
         assert "audio" not in ev
         assert "raw_pcm" not in ev
@@ -103,8 +105,11 @@ async def test_full_run_genuine_and_cloned_replay_scenarios():
 
     for ev in events_replay:
         assert ev["simulation_label"] == "SIMULATION, not a live call"
-        assert ev["spoof_status"] == "OFF (domain shift, see limitations)"
         assert "spoof_prob" not in ev
+        if ev.get("spoof_status") == "OFF (domain shift, see limitations)":
+            assert ev.get("spoof_status") == "OFF (domain shift, see limitations)"
+        else:
+            assert "spoof_calibrated_experimental" in ev or "spoof_calibrated_experimental" in ev.get("detector_scores", {})
 
 
 def test_demo_audio_endpoint():

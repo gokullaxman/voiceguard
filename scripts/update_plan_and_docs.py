@@ -95,7 +95,8 @@ def update_plan_document():
 - **Linear Speaker Calibration Fit on All Data**: The linear speaker mapping parameters `(a = 0.3364, b = 0.4169)` were fitted on all 40 phone-simulated evaluation clips without a held-out estimate.
 - **Sustained-Evidence Rule on Both Bands**: Decision bands apply to final fused risk. The sustained-evidence rule requires 3 consecutive qualifying windows before triggering either MEDIUM (Step-Up) or HIGH (Block).
 - **Configuration File Split**: Configuration is split into `config/settings.yaml` (hashed whole, strictly matching `scratch/fused_eval.json` hash `ea7f4e3d...`) and `config/live.yaml` (telephony operational settings with a separate hash).
-- **Evidence**: `config/settings.yaml`, `config/live.yaml`, `scratch/fused_eval.json`, `server/risk_engine.py`.
+- **AASIST Display Modes & Recalibration (Experimental)**: Added `spoof.display_mode` (`off` [default], `real`, `calibrated`) configured in `config/live.yaml` or via `VOICEGUARD_SPOOF_DISPLAY`. In `calibrated` mode, AASIST outputs are recalibrated on project data (weight = -0.259134, intercept = 1.911943) and displayed with neutral chip "EXPERIMENTAL, display only" and disclosure label: "AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision." Crucially, the recalibrated value strictly does not enter the risk engine; fused risk, band, streaks, actions, audit risk fields, and outcome remain 100% byte-identical across all three modes.
+- **Evidence**: `config/settings.yaml`, `config/live.yaml`, `scratch/fused_eval.json`, `models/artifacts/spoof_calibration.json`, `server/risk_engine.py`, `server/streaming.py`.
 """
 
     p4_dev = """

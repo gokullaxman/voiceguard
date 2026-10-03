@@ -56,13 +56,14 @@ def test_dashboard_ws_demo_messages_and_audit_alignment(client):
         )
         assert msg.get("call_sid") == call_sid
 
-        # 2. Assert no spoof score is broadcast (strictly marked OFF)
+        # 2. Assert no raw spoof score is broadcast (strictly marked OFF or calibrated display only)
         assert "spoof_prob" not in msg, "spoof_prob must be removed from root message"
         det_scores = msg.get("detector_scores", {})
         assert "spoof_prob" not in det_scores, "spoof_prob must be removed from detector_scores"
-        assert det_scores.get("spoof") == "OFF (domain shift, see limitations)", (
-            f"Expected 'OFF (domain shift, see limitations)', got {det_scores.get('spoof')}"
-        )
+        if "spoof" in det_scores:
+            assert det_scores.get("spoof") == "OFF (domain shift, see limitations)"
+        else:
+            assert "spoof_calibrated_experimental" in det_scores or "spoof_calibrated_experimental" in msg
 
     # 3. Verify analytics counts match audit records
     r_audit = client.get(f"/audit?limit=50")

@@ -658,10 +658,16 @@
                                     <span id="detRowReplayChip" class="chip chip-off">STANDBY</span>
                                 </div>
                             </div>
-                            <div class="detector-row" style="background: rgba(245, 158, 11, 0.03); border-color: rgba(245, 158, 11, 0.2);">
-                                <span class="det-title">Synthetic speech (SPOOF)</span>
-                                <div class="det-right">
-                                    <span class="chip chip-warn">OFF, domain shift</span>
+                            <div id="spoofDetectorRow" class="detector-row" style="background: rgba(148, 163, 184, 0.03); border-color: rgba(148, 163, 184, 0.2); flex-direction: column; align-items: stretch; gap: 4px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span id="detRowSpoofTitle" class="det-title">Synthetic speech (AASIST, recalibrated)</span>
+                                    <div class="det-right">
+                                        <span id="detRowSpoofVal" class="det-num" style="display: inline-block; color: #94a3b8; font-weight: 700;">--</span>
+                                        <span id="detRowSpoofChip" class="chip chip-off" style="display: none;"></span>
+                                    </div>
+                                </div>
+                                <div id="detRowSpoofLabel" style="display: block; font-size: 10px; color: var(--text-muted); line-height: 1.35; padding-top: 4px; border-top: 1px solid rgba(148, 163, 184, 0.15);">
+                                    AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision.
                                 </div>
                             </div>
                         </div>
@@ -1214,6 +1220,40 @@
                     rChip.textContent = "LOW"; rChip.className = "chip chip-allow";
                     rRowChip.textContent = "LOW"; rRowChip.className = "chip chip-allow";
                 }
+            }
+
+            // Update Spoof Detector Row (calibrated vs off)
+            const sTitle = document.getElementById("detRowSpoofTitle");
+            const sVal = document.getElementById("detRowSpoofVal");
+            const sChip = document.getElementById("detRowSpoofChip");
+            const sLabel = document.getElementById("detRowSpoofLabel");
+
+            const calExp = ev.spoof_calibrated_experimental || ev.detector_scores?.spoof_calibrated_experimental;
+            if (calExp) {
+                if (sTitle) sTitle.textContent = "Synthetic speech (AASIST, recalibrated)";
+                if (sVal) {
+                    sVal.style.display = "inline-block";
+                    sVal.textContent = (calExp.value !== undefined && calExp.value !== null) ? Number(calExp.value).toFixed(2) : "--";
+                    sVal.style.color = "#94a3b8";
+                }
+                if (sChip) {
+                    sChip.style.display = "none";
+                }
+                if (sLabel) {
+                    sLabel.style.display = "block";
+                    sLabel.textContent = calExp.label || "AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision.";
+                }
+            } else if (ev.detector_scores && typeof ev.detector_scores.spoof === "string" && ev.detector_scores.spoof.includes("OFF")) {
+                if (sTitle) sTitle.textContent = "Synthetic speech (SPOOF)";
+                if (sVal) sVal.style.display = "none";
+                if (sChip) {
+                    sChip.textContent = "OFF, domain shift";
+                    sChip.className = "chip chip-warn";
+                    sChip.style.background = "";
+                    sChip.style.color = "";
+                    sChip.style.borderColor = "";
+                }
+                if (sLabel) sLabel.style.display = "none";
             }
 
             // Update Trend Charts

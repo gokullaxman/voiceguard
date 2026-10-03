@@ -31,7 +31,7 @@ from scipy.signal import resample_poly
 
 from server.preprocessing import VoiceActivityDetector
 from server.telephony import simulate_telephony_channel, encode_pcm_to_ulaw
-from server.streaming import StreamingSession
+from server.streaming import StreamingSession, get_spoof_display_mode
 from server.risk_engine import RiskEngine
 from server.audit import AuditLogger
 from server.demo import compute_stream_outcome
@@ -263,20 +263,59 @@ def process_audio_upload(
 
             outcome = "Block" if final_band == "HIGH" else ("Step-up only" if final_band == "MEDIUM" else "Allow")
 
-            windows_scored_list = [{
+            disp_mode = get_spoof_display_mode()
+            spoof_cal_exp_whole = None
+            if disp_mode == "calibrated" and len(audio_16k) >= 32000:
+                try:
+                    from models.spoof import AASISTSpoofDetector
+                    spoof_det = AASISTSpoofDetector(device="cpu")
+                    if len(audio_16k) < 64600:
+                        repeats = int(np.ceil(64600 / len(audio_16k)))
+                        a_sp = np.tile(audio_16k, repeats)[:64600]
+                    else:
+                        a_sp = audio_16k[-64600:]
+                    _, raw_logits, _ = spoof_det.score(a_sp, return_logits=True)
+                    if raw_logits is not None:
+                        diff = float(raw_logits[0] - raw_logits[1])
+                        cal_data = {}
+                        cal_path = "models/artifacts/spoof_calibration.json"
+                        if os.path.exists(cal_path):
+                            with open(cal_path, "r", encoding="utf-8") as f:
+                                cal_data = json.load(f)
+                        w = float(cal_data.get("weight", -0.504017))
+                        b = float(cal_data.get("intercept", 1.285819))
+                        cal_val = float(1.0 / (1.0 + np.exp(-(w * diff + b))))
+                        cal_val = max(0.0, min(1.0, cal_val))
+                        spoof_cal_exp_whole = {
+                            "value": round(cal_val, 4),
+                            "label": "AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision."
+                        }
+                except Exception:
+                    pass
+
+            whole_det_scores = {
+                "speaker_sim": round(spk_sim, 4) if spk_sim is not None else None,
+                "replay_prob": round(rep_prob, 4) if rep_prob is not None else None,
+            }
+            if disp_mode == "calibrated" and spoof_cal_exp_whole is not None:
+                whole_det_scores["spoof_calibrated_experimental"] = spoof_cal_exp_whole
+            else:
+                whole_det_scores["spoof"] = "OFF (domain shift)"
+
+            win_entry = {
                 "window": 1,
                 "window_index": 1,
                 "speaker_sim": round(spk_sim, 4) if spk_sim is not None else None,
                 "replay_prob": round(rep_prob, 4) if rep_prob is not None else None,
-                "detector_scores": {
-                    "speaker_sim": round(spk_sim, 4) if spk_sim is not None else None,
-                    "replay_prob": round(rep_prob, 4) if rep_prob is not None else None,
-                    "spoof": "OFF (domain shift)"
-                },
+                "detector_scores": whole_det_scores,
                 "risk": round(final_risk, 4),
                 "band": final_band,
                 "decision": final_decision
-            }]
+            }
+            if disp_mode == "calibrated" and spoof_cal_exp_whole is not None:
+                win_entry["spoof_calibrated_experimental"] = spoof_cal_exp_whole
+
+            windows_scored_list = [win_entry]
             windows_scored = 1
             windows_skipped_low_speech = 0
             explanation = risk_res["explanation"]
@@ -319,20 +358,29 @@ def process_audio_upload(
                     if ev:
                         spk = ev.get("detector_scores", {}).get("speaker_sim")
                         rep = ev.get("detector_scores", {}).get("replay_prob")
-                        windows_scored_list.append({
+                        win_det_scores = {
+                            "speaker_sim": round(spk, 4) if spk is not None else None,
+                            "replay_prob": round(rep, 4) if rep is not None else None,
+                        }
+                        disp_mode = getattr(session, "display_mode", "off")
+                        if disp_mode == "off":
+                            win_det_scores["spoof"] = "OFF (domain shift)"
+                        elif disp_mode == "calibrated" and "spoof_calibrated_experimental" in ev:
+                            win_det_scores["spoof_calibrated_experimental"] = ev["spoof_calibrated_experimental"]
+
+                        win_data = {
                             "window": ev["window"],
                             "window_index": ev["window"],
                             "speaker_sim": round(spk, 4) if spk is not None else None,
                             "replay_prob": round(rep, 4) if rep is not None else None,
-                            "detector_scores": {
-                                "speaker_sim": round(spk, 4) if spk is not None else None,
-                                "replay_prob": round(rep, 4) if rep is not None else None,
-                                "spoof": "OFF (domain shift)"
-                            },
+                            "detector_scores": win_det_scores,
                             "risk": round(ev["risk"], 4),
                             "band": ev["band"],
                             "decision": ev["decision"]
-                        })
+                        }
+                        if disp_mode == "calibrated" and "spoof_calibrated_experimental" in ev:
+                            win_data["spoof_calibrated_experimental"] = ev["spoof_calibrated_experimental"]
+                        windows_scored_list.append(win_data)
                         act = ev.get("action_trigger")
                         if act == "step_up":
                             actions_fired.append("MOCK OTP")
@@ -383,7 +431,17 @@ def process_audio_upload(
             explanation={"summary": f"Uploaded audio screened ({mode} mode)"}
         )
 
-        return {
+        upload_det_scores = {
+            "speaker_sim": windows_scored_list[-1]["speaker_sim"] if windows_scored_list else None,
+            "replay_prob": windows_scored_list[-1]["replay_prob"] if windows_scored_list else None,
+        }
+        disp_mode = get_spoof_display_mode()
+        if disp_mode == "off":
+            upload_det_scores["spoof"] = "OFF (domain shift)"
+        elif disp_mode == "calibrated" and windows_scored_list and "spoof_calibrated_experimental" in windows_scored_list[-1]:
+            upload_det_scores["spoof_calibrated_experimental"] = windows_scored_list[-1]["spoof_calibrated_experimental"]
+
+        resp_dict = {
             "label": UPLOAD_LABEL,
             "simulation_label": UPLOAD_LABEL,
             "call_sid": call_sid,
@@ -404,16 +462,15 @@ def process_audio_upload(
             "whole_stream_outcome": outcome,
             "outcome": outcome,
             "decision": outcome,
-            "detector_scores": {
-                "speaker_sim": windows_scored_list[-1]["speaker_sim"] if windows_scored_list else None,
-                "replay_prob": windows_scored_list[-1]["replay_prob"] if windows_scored_list else None,
-                "spoof": "OFF (domain shift)"
-            },
+            "detector_scores": upload_det_scores,
             "windows": windows_scored_list,
             "spectrogram": compute_display_mel_spectrogram(audio_16k, 16000),
             "explanation": explanation,
             "warnings": warnings
         }
+        if disp_mode == "calibrated" and windows_scored_list and "spoof_calibrated_experimental" in windows_scored_list[-1]:
+            resp_dict["spoof_calibrated_experimental"] = windows_scored_list[-1]["spoof_calibrated_experimental"]
+        return resp_dict
 
     finally:
         # Strictly delete all temporary files

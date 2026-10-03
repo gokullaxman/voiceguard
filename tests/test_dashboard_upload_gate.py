@@ -73,17 +73,23 @@ def test_upload_response_contains_label_and_no_spoof_number(client):
     # 1. Label check
     assert payload.get("label") == "UPLOAD ANALYSIS, not a validated accuracy figure"
 
-    # 2. Spoof check: exactly "OFF (domain shift)" string, NOT a number
+    # 2. Spoof check: exactly "OFF (domain shift)" string in off mode, or calibrated experimental, NOT a raw spoof_prob
     scores = payload.get("detector_scores", {})
-    assert scores.get("spoof") == "OFF (domain shift)"
     assert "spoof_prob" not in scores
+    if "spoof" in scores:
+        assert scores.get("spoof") == "OFF (domain shift)"
+    else:
+        assert "spoof_calibrated_experimental" in scores or "spoof_calibrated_experimental" in payload
 
-    # 3. Verify in all window outputs that spoof is not numeric
+    # 3. Verify in all window outputs that raw spoof_prob is not present
     windows = payload.get("windows", [])
     for win in windows:
         w_scores = win.get("detector_scores", {})
-        assert w_scores.get("spoof") == "OFF (domain shift)"
         assert "spoof_prob" not in w_scores
+        if "spoof" in w_scores:
+            assert w_scores.get("spoof") == "OFF (domain shift)"
+        else:
+            assert "spoof_calibrated_experimental" in w_scores or "spoof_calibrated_experimental" in win
 
     # 4. Verify explanation has no spoof score or weight
     exp = payload.get("explanation", {})
