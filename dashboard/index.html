@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoiceGuard — Telephony Security Gateway [SIMULATION, not a live call]</title>
+    <title>S.H.E.L.D. — Telephony Security Gateway [SIMULATION, not a live call]</title>
     <style>
         :root {
             --bg-navy: #060b14;
@@ -26,8 +27,20 @@
             --text-muted: #64748b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: var(--bg-navy); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-navy);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
         /* Pinned Top Navigation Bar */
         .topbar {
@@ -42,13 +55,49 @@
             top: 0;
             z-index: 100;
         }
-        .topbar-left { display: flex; align-items: center; gap: 16px; }
-        .logo-mark { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; letter-spacing: -0.3px; color: var(--text-primary); }
-        .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px var(--teal); }
-        .breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-        .breadcrumb strong { color: var(--text-secondary); }
 
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 17px;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .logo-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--teal);
+            box-shadow: 0 0 10px var(--teal);
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumb strong {
+            color: var(--text-secondary);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .sim-pinned-banner {
             background: #1e1b4b;
             border: 1px solid #4338ca;
@@ -63,6 +112,7 @@
             align-items: center;
             gap: 6px;
         }
+
         .status-chip {
             padding: 4px 10px;
             border-radius: 9999px;
@@ -74,12 +124,26 @@
             align-items: center;
             gap: 6px;
         }
-        .chip-live { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-        .chip-recon { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+
+        .chip-live {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .chip-recon {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber);
+        }
 
         /* App Layout: Left Slim Sidebar + Main Content */
-        .app-body { display: flex; flex: 1; min-height: calc(100vh - 52px); }
-        
+        .app-body {
+            display: flex;
+            flex: 1;
+            min-height: calc(100vh - 52px);
+        }
+
         .sidebar {
             width: 64px;
             background: var(--sidebar-bg);
@@ -91,6 +155,7 @@
             gap: 12px;
             flex-shrink: 0;
         }
+
         .nav-icon-btn {
             width: 44px;
             height: 44px;
@@ -109,16 +174,45 @@
             text-transform: uppercase;
             transition: all 0.2s ease;
         }
-        .nav-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .nav-icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
-        .nav-icon-btn.active { background: var(--teal-dim); color: var(--teal); border-color: rgba(20, 184, 166, 0.3); }
+
+        .nav-icon-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-icon-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-icon-btn.active {
+            background: var(--teal-dim);
+            color: var(--teal);
+            border-color: rgba(20, 184, 166, 0.3);
+        }
 
         /* Main Workspace Container */
-        .main-content { flex: 1; padding: 24px; max-width: 1440px; margin: 0 auto; width: 100%; }
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+        }
 
         /* Tab Panels */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
 
         /* Cards and Headers */
         .card {
@@ -129,6 +223,7 @@
             margin-bottom: 20px;
             position: relative;
         }
+
         .section-title {
             font-size: 11px;
             font-weight: 700;
@@ -140,32 +235,112 @@
             align-items: center;
             justify-content: space-between;
         }
-        .section-title span.sub { font-size: 10px; color: var(--text-muted); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+        .section-title span.sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+        }
 
         /* Two-Column Main Grid */
-        .grid, .two-col-grid {
+        .grid,
+        .two-col-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
+
         @media (max-width: 900px) {
-            .grid, .two-col-grid { grid-template-columns: 1fr; }
-            .sidebar { width: 54px; }
+
+            .grid,
+            .two-col-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 54px;
+            }
         }
 
         /* Demo Controller Header Strip */
-        .demo-panel { background: #0c1629; border: 1px solid #1e293b; }
-        .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 12px; }
-        .input-group label { display: block; font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
-        select, button { width: 100%; padding: 8px 12px; border-radius: 6px; font-size: 12px; border: 1px solid var(--card-border); background: #162035; color: #fff; outline: none; }
-        select:focus { border-color: var(--teal); }
-        .btn-group { display: flex; gap: 8px; }
-        .btn { cursor: pointer; font-weight: 700; transition: all 0.2s; border: none; font-size: 12px; border-radius: 6px; }
-        .btn-start { background: var(--teal); color: #022c22; }
-        .btn-start:hover { background: #0d9488; color: #fff; }
-        .btn-stop { background: var(--red); color: #fff; }
-        .btn-stop:hover { background: #dc2626; }
-        .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .demo-panel {
+            background: #0c1629;
+            border: 1px solid #1e293b;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid var(--card-border);
+            background: #162035;
+            color: #fff;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--teal);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            border: none;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-start {
+            background: var(--teal);
+            color: #022c22;
+        }
+
+        .btn-start:hover {
+            background: #0d9488;
+            color: #fff;
+        }
+
+        .btn-stop {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .btn-stop:hover {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
 
         /* Scenario Comparison Strip */
         .comparison-line {
@@ -174,19 +349,48 @@
             flex-wrap: wrap;
             gap: 12px;
             padding: 8px 12px;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 6px;
             margin-top: 10px;
             font-size: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .pill-match { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-        .pill-mismatch { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+
+        .status-pill {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pill-match {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .pill-mismatch {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber);
+        }
 
         /* Audio Waveform Canvas Card */
-        .canvas-container { position: relative; background: #070e1c; border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; }
-        canvas.vis-canvas { width: 100%; height: 110px; display: block; }
+        .canvas-container {
+            position: relative;
+            background: #070e1c;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        canvas.vis-canvas {
+            width: 100%;
+            height: 110px;
+            display: block;
+        }
+
         .audio-ctrl-strip {
             display: flex;
             align-items: center;
@@ -196,7 +400,13 @@
             border-top: 1px solid var(--card-border);
             font-size: 12px;
         }
-        .audio-playback-actions { display: flex; align-items: center; gap: 10px; }
+
+        .audio-playback-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .btn-play-pause {
             width: 30px;
             height: 30px;
@@ -211,6 +421,7 @@
             border: none;
             font-size: 12px;
         }
+
         .marker-tag {
             font-size: 10px;
             font-weight: 700;
@@ -221,28 +432,126 @@
         }
 
         /* Mel-Spectrogram Card */
-        .axis-canvas-wrapper { position: relative; padding-left: 42px; padding-bottom: 22px; background: #070e1c; border: 1px solid var(--card-border); border-radius: 8px; }
-        .y-axis-label { position: absolute; left: 6px; font-size: 9px; color: var(--text-muted); font-family: monospace; }
-        .x-axis-label { position: absolute; bottom: 4px; font-size: 9px; color: var(--text-muted); font-family: monospace; }
+        .axis-canvas-wrapper {
+            position: relative;
+            padding-left: 42px;
+            padding-bottom: 22px;
+            background: #070e1c;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+        }
+
+        .y-axis-label {
+            position: absolute;
+            left: 6px;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .x-axis-label {
+            position: absolute;
+            bottom: 4px;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
 
         /* Details Card */
-        .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px; }
-        .detail-item { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 6px; }
-        .detail-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
-        .detail-val { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .detail-lbl {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .detail-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
 
         /* Voiceprint Verification Card */
-        .readout-large { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
-        .readout-num { font-size: 38px; font-weight: 800; font-family: monospace; }
-        .readout-sub { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
-        .reference-bar-container { position: relative; margin: 16px 0 28px 0; }
-        .reference-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; position: relative; }
-        .reference-fill { height: 100%; background: var(--teal); border-radius: 4px; width: 0%; transition: width 0.3s ease; }
-        .ref-mark { position: absolute; top: -6px; width: 2px; height: 20px; background: var(--amber); }
-        .ref-mark-label { position: absolute; top: 16px; font-size: 9px; color: var(--amber); white-space: nowrap; transform: translateX(-50%); font-weight: 600; }
+        .readout-large {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .readout-num {
+            font-size: 38px;
+            font-weight: 800;
+            font-family: monospace;
+        }
+
+        .readout-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .reference-bar-container {
+            position: relative;
+            margin: 16px 0 28px 0;
+        }
+
+        .reference-bar {
+            width: 100%;
+            height: 8px;
+            background: #1e293b;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .reference-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .ref-mark {
+            position: absolute;
+            top: -6px;
+            width: 2px;
+            height: 20px;
+            background: var(--amber);
+        }
+
+        .ref-mark-label {
+            position: absolute;
+            top: 16px;
+            font-size: 9px;
+            color: var(--amber);
+            white-space: nowrap;
+            transform: translateX(-50%);
+            font-weight: 600;
+        }
 
         /* Detector Status List (3 rows strictly) */
-        .detector-list { display: flex; flex-direction: column; gap: 8px; }
+        .detector-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .detector-row {
             display: flex;
             align-items: center;
@@ -253,21 +562,92 @@
             border-radius: 6px;
             font-size: 12px;
         }
-        .det-title { font-weight: 600; color: var(--text-primary); }
-        .det-right { display: flex; align-items: center; gap: 10px; }
-        .det-num { font-family: monospace; font-size: 13px; font-weight: 700; }
-        .chip { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .chip-allow { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-        .chip-warn { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
-        .chip-block { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
-        .chip-off { background: rgba(100, 116, 139, 0.2); color: var(--text-muted); border: 1px solid #475569; }
+
+        .det-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .det-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .det-num {
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .chip {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .chip-allow {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .chip-warn {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber);
+        }
+
+        .chip-block {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .chip-off {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-muted);
+            border: 1px solid #475569;
+        }
 
         /* Fused Risk Meter */
-        .fused-risk-display { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .risk-huge { font-size: 44px; font-weight: 800; font-family: monospace; }
-        .risk-bar-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
-        .risk-bar-progress { height: 100%; width: 0%; transition: width 0.25s ease, background-color 0.25s ease; }
-        .threshold-ticks { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); font-family: monospace; }
+        .fused-risk-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .risk-huge {
+            font-size: 44px;
+            font-weight: 800;
+            font-family: monospace;
+        }
+
+        .risk-bar-track {
+            width: 100%;
+            height: 10px;
+            background: #1e293b;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .risk-bar-progress {
+            height: 100%;
+            width: 0%;
+            transition: width 0.25s ease, background-color 0.25s ease;
+        }
+
+        .threshold-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
 
         /* Bottom Fixed Action Bar */
         .bottom-action-bar {
@@ -281,10 +661,16 @@
             justify-content: space-between;
             gap: 16px;
             z-index: 90;
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
             flex-wrap: wrap;
         }
-        .action-left { display: flex; align-items: center; gap: 12px; }
+
+        .action-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .action-verdict {
             padding: 8px 18px;
             border-radius: 6px;
@@ -296,10 +682,25 @@
             align-items: center;
             gap: 8px;
         }
-        .verdict-allow { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-        .verdict-stepup { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
-        .verdict-block { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
-        
+
+        .verdict-allow {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .verdict-stepup {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber);
+        }
+
+        .verdict-block {
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
         .human-review-chip {
             background: var(--amber-dim);
             color: var(--amber);
@@ -310,30 +711,129 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-        .disclaimer-subtext { font-size: 11px; color: var(--text-muted); max-width: 620px; line-height: 1.4; }
+
+        .disclaimer-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+            max-width: 620px;
+            line-height: 1.4;
+        }
 
         /* Upload Panel */
-        .upload-panel { background: #0c1629; border: 1px solid var(--card-border); }
-        .drop-zone { border: 2px dashed #334155; border-radius: 8px; padding: 22px; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(15, 23, 42, 0.4); margin-bottom: 14px; }
-        .drop-zone.dragover { border-color: var(--teal); background: var(--teal-dim); }
-        .drop-zone-text { font-size: 12px; color: var(--text-secondary); }
-        .drop-zone-text strong { color: var(--text-primary); }
-        .file-info-badge { display: inline-flex; align-items: center; gap: 8px; background: #1e293b; padding: 4px 12px; border-radius: 6px; font-size: 11px; margin-top: 8px; border: 1px solid #334155; }
-        .fixed-disclaimer { background: rgba(30, 27, 75, 0.7); border: 1px solid #4338ca; color: #c7d2fe; padding: 12px 16px; border-radius: 8px; font-size: 11px; margin-top: 16px; line-height: 1.5; }
-        .warning-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); color: #fde68a; border-radius: 8px; padding: 10px 14px; margin: 14px 0; font-size: 11px; }
+        .upload-panel {
+            background: #0c1629;
+            border: 1px solid var(--card-border);
+        }
+
+        .drop-zone {
+            border: 2px dashed #334155;
+            border-radius: 8px;
+            padding: 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(15, 23, 42, 0.4);
+            margin-bottom: 14px;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--teal);
+            background: var(--teal-dim);
+        }
+
+        .drop-zone-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .drop-zone-text strong {
+            color: var(--text-primary);
+        }
+
+        .file-info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            margin-top: 8px;
+            border: 1px solid #334155;
+        }
+
+        .fixed-disclaimer {
+            background: rgba(30, 27, 75, 0.7);
+            border: 1px solid #4338ca;
+            color: #c7d2fe;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--amber);
+            color: #fde68a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 14px 0;
+            font-size: 11px;
+        }
 
         /* Audit Table */
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--card-border); }
-        th { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 10px; }
-        .mono { font-family: monospace; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        th,
+        td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        .mono {
+            font-family: monospace;
+        }
 
         /* Limitations Box */
-        details.limitations-box { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 10px 14px; margin-top: 16px; font-size: 11px; }
-        details.limitations-box summary { font-size: 12px; font-weight: 700; color: var(--amber); cursor: pointer; outline: none; }
-        details.limitations-box ul { margin: 8px 0 0 16px; line-height: 1.6; color: #cbd5e1; }
+        details.limitations-box {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 16px;
+            font-size: 11px;
+        }
+
+        details.limitations-box summary {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--amber);
+            cursor: pointer;
+            outline: none;
+        }
+
+        details.limitations-box ul {
+            margin: 8px 0 0 16px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
     </style>
 </head>
+
 <body>
 
     <!-- Pinned Top Navigation Bar with SIMULATION Label -->
@@ -341,7 +841,7 @@
         <div class="topbar-left">
             <div class="logo-mark">
                 <div class="logo-dot"></div>
-                <span>VoiceGuard</span>
+                <span>S.H.E.L.D.</span>
             </div>
             <div class="breadcrumb">
                 <span>/</span>
@@ -359,23 +859,45 @@
         <!-- Slim Left Icon Sidebar -->
         <nav class="sidebar" aria-label="Sidebar Navigation">
             <button class="nav-icon-btn active" onclick="switchNav('overview')" title="Overview">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
                 <span>Overview</span>
             </button>
             <button class="nav-icon-btn" onclick="switchNav('demo')" title="Demo Scenarios">
-                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <svg viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
                 <span>Demo</span>
             </button>
             <button class="nav-icon-btn" onclick="switchNav('upload')" title="Upload Analysis">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
                 <span>Upload</span>
             </button>
             <button class="nav-icon-btn" onclick="switchNav('audit')" title="Audit Trail">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
                 <span>Audit</span>
             </button>
             <button class="nav-icon-btn" onclick="switchNav('settings')" title="Settings &amp; Info">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
                 <span>Config</span>
             </button>
         </nav>
@@ -435,12 +957,14 @@
                     <span>Analyse an audio file</span>
                     <span class="sub">Upload Analysis &amp; Screening</span>
                 </div>
-                
+
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('uploadFileInput').click()">
-                    <input type="file" id="uploadFileInput" accept=".wav,.mp3,.m4a,.ogg,.opus,.flac,.aac,.webm" style="display: none;">
+                    <input type="file" id="uploadFileInput" accept=".wav,.mp3,.m4a,.ogg,.opus,.flac,.aac,.webm"
+                        style="display: none;">
                     <div class="drop-zone-text">
                         <strong>Choose an audio file</strong> or drag &amp; drop it here<br>
-                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: inline-block;">
+                        <span
+                            style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: inline-block;">
                             Supported: WAV, MP3, M4A, OGG, OPUS, FLAC, AAC, WEBM (2.0s &ndash; 120s, max 25 MB)
                         </span>
                     </div>
@@ -466,32 +990,37 @@
                         </select>
                     </div>
                     <div class="input-group" style="padding-bottom: 8px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); cursor: pointer;">
-                            <input type="checkbox" id="uploadPhoneSim" checked style="width: 14px; height: 14px; accent-color: var(--teal);">
+                        <label
+                            style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="uploadPhoneSim" checked
+                                style="width: 14px; height: 14px; accent-color: var(--teal);">
                             <span>Apply Phone Simulation</span>
                         </label>
                     </div>
                     <div>
-                        <button id="btnAnalyseUpload" class="btn btn-start" onclick="analyseUploadedFile()">Analyse Audio</button>
+                        <button id="btnAnalyseUpload" class="btn btn-start" onclick="analyseUploadedFile()">Analyse
+                            Audio</button>
                     </div>
                 </div>
 
-                <div id="uploadProgress" style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--teal); padding: 6px 0;">
+                <div id="uploadProgress"
+                    style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--teal); padding: 6px 0;">
                     <span class="status-chip chip-recon">Processing audio upload...</span>
                     <span>Probing format, converting to 16kHz float32 WAV, and running scoring pipeline...</span>
                 </div>
-                <div id="uploadError" class="warning-box" style="display: none; background: var(--red-dim); border-color: var(--red); color: #fca5a5;"></div>
+                <div id="uploadError" class="warning-box"
+                    style="display: none; background: var(--red-dim); border-color: var(--red); color: #fca5a5;"></div>
 
                 <div id="uploadWarningsBox" class="warning-box" style="display: none;">
                     <strong>Active Warnings:</strong>
                     <ul id="uploadWarningsList"></ul>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
-                    <span style="font-size: 11px; color: var(--text-muted);">
-                        Synthetic Spoof (AASIST): <strong style="color: var(--amber);">OFF (domain shift, see limitations)</strong>
-                    </span>
-                    <button class="btn" style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 6px 12px; width: auto; font-size: 11px;" onclick="downloadResultJson()">
+                <div
+                    style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
+                    <button class="btn"
+                        style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 6px 12px; width: auto; font-size: 11px;"
+                        onclick="downloadResultJson()">
                         &#x2913; Download result as JSON
                     </button>
                 </div>
@@ -504,10 +1033,10 @@
 
             <!-- Two-Column Telemetry Workspace -->
             <div class="grid">
-                
+
                 <!-- Left Column: Audio, Spectrogram, Details -->
                 <div class="col-left">
-                    
+
                     <!-- a) Audio Card: Waveform, Playhead, Markers -->
                     <div class="card">
                         <div class="section-title">
@@ -519,12 +1048,15 @@
                         </div>
                         <div class="audio-ctrl-strip">
                             <div class="audio-playback-actions">
-                                <button id="playPauseBtn" class="btn-play-pause" onclick="toggleAudioPlayback()" title="Play/Pause">&#9658;</button>
-                                <span id="audioTimeReadout" class="mono" style="color: var(--text-secondary); font-size: 12px;">00:00 / 00:00</span>
+                                <button id="playPauseBtn" class="btn-play-pause" onclick="toggleAudioPlayback()"
+                                    title="Play/Pause">&#9658;</button>
+                                <span id="audioTimeReadout" class="mono"
+                                    style="color: var(--text-secondary); font-size: 12px;">00:00 / 00:00</span>
                             </div>
                             <div id="audioEventMarkers" style="display: flex; gap: 6px; align-items: center;">
                                 <span style="font-size: 10px; color: var(--text-muted);">Event markers:</span>
-                                <span id="markersList" style="font-size: 11px; color: var(--text-secondary);">None</span>
+                                <span id="markersList"
+                                    style="font-size: 11px; color: var(--text-secondary);">None</span>
                             </div>
                         </div>
                     </div>
@@ -615,9 +1147,12 @@
 
                         <!-- Per-window Speaker Sim Trend Canvas -->
                         <div style="margin-top: 18px;">
-                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 700;">Per-Window Speaker Similarity Trend</div>
+                            <div
+                                style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 700;">
+                                Per-Window Speaker Similarity Trend</div>
                             <div class="canvas-container" style="height: 54px;">
-                                <canvas id="speakerChartCanvas" width="500" height="54" style="width: 100%; height: 54px; display: block;"></canvas>
+                                <canvas id="speakerChartCanvas" width="500" height="54"
+                                    style="width: 100%; height: 54px; display: block;"></canvas>
                             </div>
                         </div>
                     </div>
@@ -633,7 +1168,8 @@
                             <div class="readout-sub">Acoustic Loudspeaker Probability</div>
                         </div>
                         <div class="canvas-container" style="height: 54px; margin-top: 10px;">
-                            <canvas id="replayChartCanvas" width="500" height="54" style="width: 100%; height: 54px; display: block;"></canvas>
+                            <canvas id="replayChartCanvas" width="500" height="54"
+                                style="width: 100%; height: 54px; display: block;"></canvas>
                         </div>
                     </div>
 
@@ -658,16 +1194,21 @@
                                     <span id="detRowReplayChip" class="chip chip-off">STANDBY</span>
                                 </div>
                             </div>
-                            <div id="spoofDetectorRow" class="detector-row" style="background: rgba(148, 163, 184, 0.03); border-color: rgba(148, 163, 184, 0.2); flex-direction: column; align-items: stretch; gap: 4px;">
+                            <div id="spoofDetectorRow" class="detector-row"
+                                style="background: rgba(148, 163, 184, 0.03); border-color: rgba(148, 163, 184, 0.2); flex-direction: column; align-items: stretch; gap: 4px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span id="detRowSpoofTitle" class="det-title">Synthetic speech (AASIST, recalibrated)</span>
+                                    <span id="detRowSpoofTitle" class="det-title">Synthetic speech (AASIST,
+                                        recalibrated)</span>
                                     <div class="det-right">
-                                        <span id="detRowSpoofVal" class="det-num" style="display: inline-block; color: #94a3b8; font-weight: 700;">--</span>
+                                        <span id="detRowSpoofVal" class="det-num"
+                                            style="display: inline-block; color: #94a3b8; font-weight: 700;">--</span>
                                         <span id="detRowSpoofChip" class="chip chip-off" style="display: none;"></span>
                                     </div>
                                 </div>
-                                <div id="detRowSpoofLabel" style="display: block; font-size: 10px; color: var(--text-muted); line-height: 1.35; padding-top: 4px; border-top: 1px solid rgba(148, 163, 184, 0.15);">
-                                    AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision.
+                                <div id="detRowSpoofLabel"
+                                    style="display: block; font-size: 10px; color: var(--text-muted); line-height: 1.35; padding-top: 4px; border-top: 1px solid rgba(148, 163, 184, 0.15);">
+                                    AASIST output recalibrated on project data (optimistic, one speaker). Display only,
+                                    not used in decision.
                                 </div>
                             </div>
                         </div>
@@ -681,7 +1222,8 @@
                         </div>
                         <div class="fused-risk-display">
                             <div id="riskScoreVal" class="risk-huge">0.00</div>
-                            <div id="riskDecisionVal" style="font-size: 15px; font-weight: 700; color: var(--green);">Allow</div>
+                            <div id="riskDecisionVal" style="font-size: 15px; font-weight: 700; color: var(--green);">
+                                Allow</div>
                         </div>
                         <div class="risk-bar-track">
                             <div id="riskProgressBar" class="risk-bar-progress" style="background: var(--green);"></div>
@@ -692,8 +1234,10 @@
                             <span>0.60 (BLOCK)</span>
                             <span>1.00</span>
                         </div>
-                        <div id="riskExplanationText" style="margin-top: 14px; font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--card-border);">
-                            Weights: 50% Speaker, 50% Replay, 0% Spoof (off). Sustained evidence rule requires 3 consecutive qualifying windows.
+                        <div id="riskExplanationText"
+                            style="margin-top: 14px; font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--card-border);">
+                            Weights: 50% Speaker, 50% Replay, 0% Spoof (off). Sustained evidence rule requires 3
+                            consecutive qualifying windows.
                         </div>
                     </div>
 
@@ -720,7 +1264,10 @@
                         </tr>
                     </thead>
                     <tbody id="auditTableBody">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Listening for live or demo streaming events...</td></tr>
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted);">Listening for live or
+                                demo streaming events...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -729,10 +1276,18 @@
             <details class="limitations-box">
                 <summary>&#9656; System Methodological Limitations &amp; Disclosures (Click to Expand)</summary>
                 <ul>
-                    <li><strong>Single-Speaker Enrollment</strong>: Calibrated specifically against target speaker (<code>gokul</code>). Multi-speaker false acceptance rates require larger multi-speaker corpora.</li>
-                    <li><strong>AASIST Spoof Disabled</strong>: Pretrained AASIST is disabled in production (<code>weight: 0.0</code>) due to severe acoustic domain shift on non-studio consumer microphones (<code>cause not measured</code>).</li>
-                    <li><strong>Replay Channel Confound</strong>: Replay detector was trained on clips recorded with a single phone and loudspeaker; open-world acoustic replay generalization remains an ongoing research challenge.</li>
-                    <li><strong>Exhibition Simulation</strong>: This interface demonstrates telephony risk engine evaluation under software simulation; it is not connected to live carrier PSTN telephone lines.</li>
+                    <li><strong>Single-Speaker Enrollment</strong>: Calibrated specifically against target speaker
+                        (<code>gokul</code>). Multi-speaker false acceptance rates require larger multi-speaker corpora.
+                    </li>
+                    <li><strong>AASIST Spoof Disabled</strong>: Pretrained AASIST is disabled in production
+                        (<code>weight: 0.0</code>) due to severe acoustic domain shift on non-studio consumer
+                        microphones (<code>cause not measured</code>).</li>
+                    <li><strong>Replay Channel Confound</strong>: Replay detector was trained on clips recorded with a
+                        single phone and loudspeaker; open-world acoustic replay generalization remains an ongoing
+                        research challenge.</li>
+                    <li><strong>Exhibition Simulation</strong>: This interface demonstrates telephony risk engine
+                        evaluation under software simulation; it is not connected to live carrier PSTN telephone lines.
+                    </li>
                 </ul>
             </details>
 
@@ -742,7 +1297,9 @@
     <!-- Bottom Sticky Action Bar -->
     <footer class="bottom-action-bar">
         <div class="action-left">
-            <button id="btnReviewAudio" class="btn" style="background: #1e293b; color: #fff; border: 1px solid #334155; padding: 8px 14px;" onclick="toggleAudioPlayback()">
+            <button id="btnReviewAudio" class="btn"
+                style="background: #1e293b; color: #fff; border: 1px solid #334155; padding: 8px 14px;"
+                onclick="toggleAudioPlayback()">
                 &#9658; Review audio
             </button>
             <div id="verdictBanner" class="action-verdict verdict-allow">
@@ -753,10 +1310,13 @@
             </div>
         </div>
         <div class="disclaimer-subtext">
-            Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the clip is genuine.
+            Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the
+            clip is genuine.
         </div>
         <div>
-            <button id="btnDownloadJson" class="btn" style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 8px 14px;" onclick="downloadResultJson()">
+            <button id="btnDownloadJson" class="btn"
+                style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 8px 14px;"
+                onclick="downloadResultJson()">
                 &#x2913; Download result (JSON, no audio)
             </button>
         </div>
@@ -1468,10 +2028,11 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `voiceguard_analysis_${Date.now()}.json`;
+            a.download = `sheld_analysis_${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
     </script>
 </body>
+
 </html>

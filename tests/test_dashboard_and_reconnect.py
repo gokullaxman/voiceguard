@@ -46,7 +46,7 @@ def test_http_endpoints(client):
     # 4. Root dashboard HTML
     r_root = client.get("/")
     assert r_root.status_code == 200
-    assert "VoiceGuard" in r_root.text
+    assert "S.H.E.L.D." in r_root.text or "VoiceGuard" in r_root.text
 
 
 def test_dashboard_ws_messaging_and_analytics(client):

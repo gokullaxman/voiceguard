@@ -34,8 +34,8 @@ def test_dashboard_renders_upload_card_and_fixed_disclaimer(client):
     )
     assert expected_disclaimer in html
 
-    # 3. Spoof card text is "OFF (domain shift, see limitations)"
-    assert "OFF (domain shift, see limitations)" in html
+    # 3. Spoof card text "OFF (domain shift, see limitations)" is removed from upload panel
+    assert "OFF (domain shift, see limitations)" not in html
 
     # 4. JSON download button present
     assert "Download result as JSON" in html
