@@ -4,53 +4,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.H.E.L.D. — Telephony Security Gateway [SIMULATION, not a live call]</title>
+    <title>S.H.I.E.L.D. — Telephony Security Gateway [SIMULATION, not a live call]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-navy: #060b14;
-            --sidebar-bg: #09101d;
-            --card-bg: #0d1527;
-            --card-border: #1e293b;
-            --card-inner: #131d33;
-            --teal: #14b8a6;
-            --teal-dim: rgba(20, 184, 166, 0.15);
-            --amber: #f59e0b;
-            --amber-dim: rgba(245, 158, 11, 0.15);
-            --red: #ef4444;
-            --red-dim: rgba(239, 68, 68, 0.15);
-            --green: #10b981;
-            --green-dim: rgba(16, 185, 129, 0.15);
-            --blue: #3b82f6;
-            --blue-dim: rgba(59, 130, 246, 0.15);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
+            /* Surfaces */
+            --bg-app: #F6F6F7;
+            /* page / top strip */
+            --bg-surface: #FFFFFF;
+            /* cards, panels */
+            --bg-hover: #F3F4F6;
+            /* row hover, tabs */
+            --border: #ECECEE;
+            /* 1px dividers */
+
+            /* Text */
+            --text-primary: #111113;
+            /* headings, numbers */
+            --text-secondary: #5F6068;
+            /* body, table cells */
+            --text-muted: #9A9BA3;
+            /* labels, axis, hints */
+
+            /* Brand / action */
+            --action: #111113;
+            /* primary button, logo, active tab underline */
+            --action-text: #FFFFFF;
+
+            /* Data scale: good → bad */
+            --green: #22C55E;
+            /* positive, revenue, paid */
+            --green-soft: #E9F9EF;
+            /* area-fill under line */
+            --lime: #C5E234;
+            /* in-progress, recent */
+            --yellow: #F2D94E;
+            --orange: #F5A623;
+            /* warning */
+            --red: #EF4B6C;
+            /* costs, negative, overdue */
+            --gray-bar: #E4E4E7;
+            /* empty / remaining segment */
+
+            --shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] {
+            --bg-app: #0B0B0D;
+            --bg-surface: #141417;
+            --border: #26262B;
+            --text-primary: #F4F4F5;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --action: #FFFFFF;
+            --action-text: #111113;
+            --green-soft: rgba(34, 197, 94, .12);
+            --bg-hover: #1C1C21;
+            --gray-bar: #27272A;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
-            background: var(--bg-navy);
+            background: var(--bg-app);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Pinned Top Navigation Bar */
+        /* Top Navigation Bar */
         .topbar {
-            height: 52px;
-            background: #09101e;
-            border-bottom: 1px solid var(--card-border);
+            height: 56px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 24px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -59,25 +98,26 @@
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
 
         .logo-mark {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 800;
-            font-size: 17px;
-            letter-spacing: -0.3px;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.02em;
             color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
         }
 
         .logo-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--teal);
-            box-shadow: 0 0 10px var(--teal);
+            background: var(--action);
         }
 
         .breadcrumb {
@@ -89,7 +129,41 @@
         }
 
         .breadcrumb strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Centered Topbar Text Tabs with 2px underline */
+        .topbar-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            height: 100%;
+        }
+
+        .topbar-tab {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
             color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            height: 100%;
+            padding: 0 4px;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .topbar-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .topbar-tab.active {
+            color: var(--text-primary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--action);
         }
 
         .topbar-right {
@@ -98,67 +172,85 @@
             gap: 12px;
         }
 
-        .sim-pinned-banner {
-            background: #1e1b4b;
-            border: 1px solid #4338ca;
-            color: #c7d2fe;
-            padding: 4px 10px;
+        .theme-toggle-btn {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
             border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .sim-pill {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
         .status-chip {
             padding: 4px 10px;
-            border-radius: 9999px;
+            border-radius: 999px;
             font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
+            font-weight: 600;
             letter-spacing: 0.04em;
+            text-transform: uppercase;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
         .chip-live {
-            background: var(--green-dim);
+            background: var(--green-soft);
             color: var(--green);
-            border: 1px solid var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .chip-recon {
-            background: var(--amber-dim);
-            color: var(--amber);
-            border: 1px solid var(--amber);
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--orange);
+            border: 1px solid rgba(245, 166, 35, 0.3);
         }
 
-        /* App Layout: Left Slim Sidebar + Main Content */
+        /* App Body Layout */
         .app-body {
             display: flex;
             flex: 1;
-            min-height: calc(100vh - 52px);
+            min-height: calc(100vh - 56px);
         }
 
+        /* Sidebar Navigation */
         .sidebar {
-            width: 64px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--card-border);
+            width: 60px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 16px 0;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
         .nav-icon-btn {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 8px;
             border: 1px solid transparent;
             background: transparent;
@@ -172,12 +264,12 @@
             font-size: 9px;
             font-weight: 600;
             text-transform: uppercase;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .nav-icon-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             stroke: currentColor;
             fill: none;
             stroke-width: 2;
@@ -186,14 +278,14 @@
         }
 
         .nav-icon-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-hover);
             color: var(--text-primary);
         }
 
         .nav-icon-btn.active {
-            background: var(--teal-dim);
-            color: var(--teal);
-            border-color: rgba(20, 184, 166, 0.3);
+            background: var(--bg-hover);
+            color: var(--action);
+            border-color: var(--border);
         }
 
         /* Main Workspace Container */
@@ -205,103 +297,164 @@
             width: 100%;
         }
 
-        /* Tab Panels */
-        .tab-panel {
-            display: none;
+        /* KPI Strip (Top of Workspace) */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
         }
 
-        .tab-panel.active {
-            display: block;
+        .kpi-block {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        /* Cards and Headers */
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .section-title {
+        .kpi-label {
             font-size: 11px;
-            font-weight: 700;
-            color: var(--teal);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 12px;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .section-title span.sub {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: none;
-            letter-spacing: 0;
+        .kpi-value-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
 
-        /* Two-Column Main Grid */
+        .kpi-number {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-sparkline-track {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-bar);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .kpi-sparkline-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Cards and General Layout */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title span.sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Two-Column Main Grid (16px gap) */
         .grid,
         .two-col-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 16px;
         }
 
-        @media (max-width: 900px) {
-
+        @media (max-width: 960px) {
             .grid,
             .two-col-grid {
                 grid-template-columns: 1fr;
             }
 
-            .sidebar {
-                width: 54px;
+            .kpi-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .topbar-nav-tabs {
+                display: none;
             }
         }
 
-        /* Demo Controller Header Strip */
-        .demo-panel {
-            background: #0c1629;
-            border: 1px solid #1e293b;
+        @media (max-width: 600px) {
+            .kpi-strip {
+                grid-template-columns: 1fr;
+            }
         }
 
+        /* Form Row & Inputs */
         .form-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr auto;
             gap: 12px;
             align-items: end;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .input-group label {
             display: block;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
         }
 
         select,
-        button {
+        input[type="text"] {
             width: 100%;
             padding: 8px 12px;
             border-radius: 6px;
-            font-size: 12px;
-            border: 1px solid var(--card-border);
-            background: #162035;
-            color: #fff;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-primary);
             outline: none;
+            transition: border-color 0.15s ease;
         }
 
-        select:focus {
-            border-color: var(--teal);
+        select:focus,
+        input[type="text"]:focus {
+            border-color: var(--text-primary);
         }
 
         .btn-group {
@@ -309,32 +462,54 @@
             gap: 8px;
         }
 
+        /* Buttons */
         .btn {
             cursor: pointer;
-            font-weight: 700;
-            transition: all 0.2s;
-            border: none;
-            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            font-size: 13px;
             border-radius: 6px;
+            padding: 8px 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid transparent;
+            user-select: none;
         }
 
+        .btn-primary,
         .btn-start {
-            background: var(--teal);
-            color: #022c22;
+            background: var(--action);
+            color: var(--action-text);
+            border-color: var(--action);
         }
 
+        .btn-primary:hover,
         .btn-start:hover {
-            background: #0d9488;
-            color: #fff;
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
         }
 
         .btn-stop {
-            background: var(--red);
-            color: #fff;
+            background: var(--bg-surface);
+            color: var(--red);
+            border: 1px solid var(--border);
         }
 
         .btn-stop:hover {
-            background: #dc2626;
+            background: rgba(239, 75, 108, 0.08);
+            border-color: var(--red);
         }
 
         .btn:disabled {
@@ -342,46 +517,47 @@
             cursor: not-allowed;
         }
 
-        /* Scenario Comparison Strip */
+        /* Comparison Line */
         .comparison-line {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 14px;
+            background: var(--bg-hover);
             border-radius: 6px;
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
         }
 
         .status-pill {
-            padding: 3px 8px;
-            border-radius: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
         .pill-match {
-            background: var(--green-dim);
+            background: var(--green-soft);
             color: var(--green);
-            border: 1px solid var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .pill-mismatch {
-            background: var(--amber-dim);
-            color: var(--amber);
-            border: 1px solid var(--amber);
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--orange);
+            border: 1px solid rgba(245, 166, 35, 0.3);
         }
 
-        /* Audio Waveform Canvas Card */
+        /* Canvas Containers with Hairline Border */
         .canvas-container {
             position: relative;
-            background: #070e1c;
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
             overflow: hidden;
         }
 
@@ -395,38 +571,44 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 12px;
-            background: #091224;
-            border-top: 1px solid var(--card-border);
+            padding: 10px 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
             font-size: 12px;
         }
 
         .audio-playback-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn-play-pause {
-            width: 30px;
-            height: 30px;
-            padding: 0;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: var(--teal);
-            color: #042f2e;
+            background: var(--action);
+            color: var(--action-text);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             border: none;
-            font-size: 12px;
+            font-size: 11px;
+            transition: opacity 0.15s ease;
+        }
+
+        .btn-play-pause:hover {
+            opacity: 0.9;
         }
 
         .marker-tag {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 600;
             padding: 2px 6px;
-            border-radius: 3px;
+            border-radius: 4px;
             text-transform: uppercase;
             margin-left: 6px;
         }
@@ -434,17 +616,17 @@
         /* Mel-Spectrogram Card */
         .axis-canvas-wrapper {
             position: relative;
-            padding-left: 42px;
+            padding-left: 44px;
             padding-bottom: 22px;
-            background: #070e1c;
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
         }
 
         .y-axis-label {
             position: absolute;
-            left: 6px;
-            font-size: 9px;
+            left: 8px;
+            font-size: 10px;
             color: var(--text-muted);
             font-family: monospace;
         }
@@ -452,60 +634,62 @@
         .x-axis-label {
             position: absolute;
             bottom: 4px;
-            font-size: 9px;
+            font-size: 10px;
             color: var(--text-muted);
             font-family: monospace;
         }
 
-        /* Details Card */
+        /* Details Grid */
         .details-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            font-size: 12px;
         }
 
         .detail-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--card-border);
-            padding: 8px 12px;
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
             border-radius: 6px;
         }
 
         .detail-lbl {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.04em;
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .detail-val {
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        /* Voiceprint Verification Card */
+        /* Readout Large */
         .readout-large {
             display: flex;
             align-items: baseline;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .readout-num {
-            font-size: 38px;
-            font-weight: 800;
-            font-family: monospace;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
         }
 
         .readout-sub {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
-            font-weight: 600;
+            font-weight: 500;
         }
 
+        /* Reference Bar */
         .reference-bar-container {
             position: relative;
             margin: 16px 0 28px 0;
@@ -513,36 +697,36 @@
 
         .reference-bar {
             width: 100%;
-            height: 8px;
-            background: #1e293b;
-            border-radius: 4px;
+            height: 6px;
+            background: var(--gray-bar);
+            border-radius: 999px;
             position: relative;
         }
 
         .reference-fill {
             height: 100%;
-            background: var(--teal);
-            border-radius: 4px;
+            background: var(--green);
+            border-radius: 999px;
             width: 0%;
             transition: width 0.3s ease;
         }
 
         .ref-mark {
             position: absolute;
-            top: -6px;
+            top: -5px;
             width: 2px;
-            height: 20px;
-            background: var(--amber);
+            height: 16px;
+            background: var(--orange);
         }
 
         .ref-mark-label {
             position: absolute;
-            top: 16px;
-            font-size: 9px;
-            color: var(--amber);
+            top: 18px;
+            font-size: 10px;
+            color: var(--text-muted);
             white-space: nowrap;
             transform: translateX(-50%);
-            font-weight: 600;
+            font-weight: 500;
         }
 
         /* Detector Status List (3 rows strictly) */
@@ -556,15 +740,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--card-border);
+            padding: 12px 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .det-title {
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-primary);
         }
 
@@ -577,60 +761,64 @@
         .det-num {
             font-family: monospace;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
+        /* Chips & Badges */
         .chip {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.02em;
         }
 
         .chip-allow {
-            background: var(--green-dim);
+            background: var(--green-soft);
             color: var(--green);
-            border: 1px solid var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .chip-warn {
-            background: var(--amber-dim);
-            color: var(--amber);
-            border: 1px solid var(--amber);
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--orange);
+            border: 1px solid rgba(245, 166, 35, 0.3);
         }
 
         .chip-block {
-            background: var(--red-dim);
+            background: rgba(239, 75, 108, 0.12);
             color: var(--red);
-            border: 1px solid var(--red);
+            border: 1px solid rgba(239, 75, 108, 0.3);
         }
 
         .chip-off {
-            background: rgba(100, 116, 139, 0.2);
+            background: var(--bg-hover);
             color: var(--text-muted);
-            border: 1px solid #475569;
+            border: 1px solid var(--border);
         }
 
-        /* Fused Risk Meter */
+        /* Fused Risk Display */
         .fused-risk-display {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .risk-huge {
-            font-size: 44px;
-            font-weight: 800;
-            font-family: monospace;
+            font-size: 38px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
         }
 
         .risk-bar-track {
             width: 100%;
-            height: 10px;
-            background: #1e293b;
-            border-radius: 5px;
+            height: 8px;
+            background: var(--gray-bar);
+            border-radius: 999px;
             overflow: hidden;
             margin-bottom: 8px;
         }
@@ -639,12 +827,13 @@
             height: 100%;
             width: 0%;
             transition: width 0.25s ease, background-color 0.25s ease;
+            border-radius: 999px;
         }
 
         .threshold-ticks {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 10px;
             color: var(--text-muted);
             font-family: monospace;
         }
@@ -653,15 +842,14 @@
         .bottom-action-bar {
             position: sticky;
             bottom: 0;
-            background: #09101d;
-            border-top: 1px solid var(--card-border);
-            padding: 14px 24px;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
             z-index: 90;
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
             flex-wrap: wrap;
         }
 
@@ -672,77 +860,72 @@
         }
 
         .action-verdict {
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .verdict-allow {
-            background: var(--green-dim);
+            background: var(--green-soft);
             color: var(--green);
-            border: 1px solid var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .verdict-stepup {
-            background: var(--amber-dim);
-            color: var(--amber);
-            border: 1px solid var(--amber);
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--orange);
+            border: 1px solid rgba(245, 166, 35, 0.3);
         }
 
         .verdict-block {
-            background: var(--red-dim);
+            background: rgba(239, 75, 108, 0.12);
             color: var(--red);
-            border: 1px solid var(--red);
+            border: 1px solid rgba(239, 75, 108, 0.3);
         }
 
         .human-review-chip {
-            background: var(--amber-dim);
-            color: var(--amber);
-            border: 1px solid var(--amber);
+            background: rgba(245, 166, 35, 0.12);
+            color: var(--orange);
+            border: 1px solid rgba(245, 166, 35, 0.3);
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 999px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
         .disclaimer-subtext {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
-            max-width: 620px;
+            max-width: 640px;
             line-height: 1.4;
         }
 
-        /* Upload Panel */
-        .upload-panel {
-            background: #0c1629;
-            border: 1px solid var(--card-border);
-        }
-
+        /* Upload Panel & Drop Zone */
         .drop-zone {
-            border: 2px dashed #334155;
+            border: 1px dashed var(--text-muted);
             border-radius: 8px;
-            padding: 22px;
+            padding: 24px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(15, 23, 42, 0.4);
-            margin-bottom: 14px;
+            transition: all 0.15s ease;
+            background: var(--bg-app);
+            margin-bottom: 16px;
         }
 
         .drop-zone.dragover {
-            border-color: var(--teal);
-            background: var(--teal-dim);
+            border-color: var(--action);
+            background: var(--bg-hover);
         }
 
         .drop-zone-text {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-secondary);
         }
 
@@ -754,54 +937,60 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #1e293b;
+            background: var(--bg-surface);
             padding: 4px 12px;
-            border-radius: 6px;
+            border-radius: 999px;
             font-size: 11px;
             margin-top: 8px;
-            border: 1px solid #334155;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
         }
 
         .fixed-disclaimer {
-            background: rgba(30, 27, 75, 0.7);
-            border: 1px solid #4338ca;
-            color: #c7d2fe;
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
             padding: 12px 16px;
             border-radius: 8px;
-            font-size: 11px;
+            font-size: 12px;
             margin-top: 16px;
             line-height: 1.5;
         }
 
         .warning-box {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid var(--amber);
-            color: #fde68a;
+            background: rgba(245, 166, 35, 0.1);
+            border: 1px solid var(--orange);
+            color: var(--orange);
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 12px 14px;
             margin: 14px 0;
-            font-size: 11px;
+            font-size: 12px;
         }
 
-        /* Audit Table */
+        /* Audit Table (No zebra, 1px hairline divider, right-aligned nums) */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 13px;
         }
 
         th,
         td {
-            padding: 8px 10px;
+            padding: 10px 12px;
             text-align: left;
-            border-bottom: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--border);
         }
 
         th {
             color: var(--text-muted);
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
-            font-size: 10px;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+        }
+
+        tr:hover td {
+            background: var(--bg-hover);
         }
 
         .mono {
@@ -810,47 +999,57 @@
 
         /* Limitations Box */
         details.limitations-box {
-            background: rgba(245, 158, 11, 0.05);
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: var(--bg-app);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             margin-top: 16px;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         details.limitations-box summary {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--amber);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
             cursor: pointer;
             outline: none;
         }
 
         details.limitations-box ul {
-            margin: 8px 0 0 16px;
+            margin: 10px 0 0 16px;
             line-height: 1.6;
-            color: #cbd5e1;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Pinned Top Navigation Bar with SIMULATION Label -->
+    <!-- Pinned Top Navigation Bar with Logo Left, Centered Text Tabs, Theme Toggle & Status Right -->
     <header class="topbar">
         <div class="topbar-left">
-            <div class="logo-mark">
+            <div class="logo-mark" onclick="switchNav('overview')" title="S.H.I.E.L.D. Security Gateway">
                 <div class="logo-dot"></div>
-                <span>S.H.E.L.D.</span>
+                <span>S.H.I.E.L.D.</span>
             </div>
             <div class="breadcrumb">
                 <span>/</span>
                 <span id="breadcrumbSection">Overview</span>
                 <span>/</span>
-                <strong>Analysis</strong>
+                <strong>Telemetry</strong>
             </div>
         </div>
+
+        <nav class="topbar-nav-tabs" aria-label="Main Navigation">
+            <button class="topbar-tab active" id="tabOverview" onclick="switchNav('overview')">Overview</button>
+            <button class="topbar-tab" id="tabDemo" onclick="switchNav('demo')">Demo Scenarios</button>
+            <button class="topbar-tab" id="tabUpload" onclick="switchNav('upload')">Upload Analysis</button>
+            <button class="topbar-tab" id="tabAudit" onclick="switchNav('audit')">Audit Trail</button>
+        </nav>
+
         <div class="topbar-right">
+            <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark theme">&#9790;</button>
+            <span class="sim-pill">SIMULATION, not a live call</span>
             <div id="connStatus" class="status-chip chip-recon">Connecting...</div>
         </div>
     </header>
@@ -905,6 +1104,65 @@
         <!-- Main Workspace -->
         <main class="main-content">
 
+            <!-- Data-First KPI Summary Strip -->
+            <div class="kpi-strip">
+                <div class="kpi-block">
+                    <div class="kpi-label">
+                        <span>Fused Risk Score</span>
+                        <span id="kpiRiskBadge" class="chip chip-allow">LOW</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <div id="kpiRiskVal" class="kpi-number">0.00</div>
+                        <span style="font-size: 12px; color: var(--text-muted);">Threshold: 0.60</span>
+                    </div>
+                    <div class="kpi-sparkline-track">
+                        <div id="kpiRiskBar" class="kpi-sparkline-fill" style="width: 0%; background: var(--green);"></div>
+                    </div>
+                </div>
+
+                <div class="kpi-block">
+                    <div class="kpi-label">
+                        <span>Speaker Similarity</span>
+                        <span id="kpiSpkBadge" class="chip chip-allow">TARGET</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <div id="kpiSpkVal" class="kpi-number">--%</div>
+                        <span style="font-size: 12px; color: var(--text-muted);">b = 0.4169</span>
+                    </div>
+                    <div class="kpi-sparkline-track">
+                        <div id="kpiSpkBar" class="kpi-sparkline-fill" style="width: 0%; background: var(--green);"></div>
+                    </div>
+                </div>
+
+                <div class="kpi-block">
+                    <div class="kpi-label">
+                        <span>Acoustic Replay</span>
+                        <span id="kpiRepBadge" class="chip chip-allow">CLEAR</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <div id="kpiRepVal" class="kpi-number">--</div>
+                        <span style="font-size: 12px; color: var(--text-muted);">Gate: &lt; 0.30</span>
+                    </div>
+                    <div class="kpi-sparkline-track">
+                        <div id="kpiRepBar" class="kpi-sparkline-fill" style="width: 0%; background: var(--green);"></div>
+                    </div>
+                </div>
+
+                <div class="kpi-block">
+                    <div class="kpi-label">
+                        <span>Active Ensemble</span>
+                        <span class="chip chip-live">ACTIVE</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <div class="kpi-number">3 Detectors</div>
+                        <span style="font-size: 12px; color: var(--text-muted);">Sustained: 3 Win</span>
+                    </div>
+                    <div class="kpi-sparkline-track">
+                        <div class="kpi-sparkline-fill" style="width: 100%; background: var(--action);"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Interactive Demo Controller Card (Visible on Overview & Demo) -->
             <div id="demoPanelCard" class="card demo-panel">
                 <div class="section-title">
@@ -913,13 +1171,13 @@
                 </div>
                 <div class="form-row">
                     <div class="input-group">
-                        <label for="scenarioSelect">Demo Scenario:</label>
+                        <label for="scenarioSelect">Demo Scenario</label>
                         <select id="scenarioSelect">
                             <option value="">Loading scenarios...</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="sensitivitySelect">Intent Sensitivity:</label>
+                        <label for="sensitivitySelect">Intent Sensitivity</label>
                         <select id="sensitivitySelect">
                             <option value="balance_check">Balance Inquiry (+0.00)</option>
                             <option value="password_reset">Credential Reset (+0.15)</option>
@@ -927,7 +1185,7 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="speedSelect">Playback Speed:</label>
+                        <label for="speedSelect">Playback Speed</label>
                         <select id="speedSelect">
                             <option value="1.0">1x (Real-Time 20ms)</option>
                             <option value="2.0">2x (Accelerated)</option>
@@ -939,9 +1197,9 @@
                     </div>
                 </div>
 
-                <!-- Scenario Comparison Line with Amber Mismatch Flags -->
+                <!-- Scenario Comparison Line -->
                 <div class="comparison-line">
-                    <span style="font-weight: 700; color: var(--text-secondary);">STATUS:</span>
+                    <strong style="color: var(--text-primary); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em;">Status:</strong>
                     <span id="expectedLabel">Expected: --</span>
                     <span>&bull;</span>
                     <span id="bandLabel">Final Band: --</span>
@@ -963,8 +1221,7 @@
                         style="display: none;">
                     <div class="drop-zone-text">
                         <strong>Choose an audio file</strong> or drag &amp; drop it here<br>
-                        <span
-                            style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: inline-block;">
+                        <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px; display: inline-block;">
                             Supported: WAV, MP3, M4A, OGG, OPUS, FLAC, AAC, WEBM (2.0s &ndash; 120s, max 25 MB)
                         </span>
                     </div>
@@ -975,7 +1232,7 @@
 
                 <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr auto; align-items: end;">
                     <div class="input-group">
-                        <label for="uploadSensitivitySelect">Action Sensitivity:</label>
+                        <label for="uploadSensitivitySelect">Action Sensitivity</label>
                         <select id="uploadSensitivitySelect">
                             <option value="balance_check">Balance Inquiry (+0.00)</option>
                             <option value="password_reset">Credential Reset (+0.15)</option>
@@ -983,51 +1240,43 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="uploadModeSelect">Analysis Mode:</label>
+                        <label for="uploadModeSelect">Analysis Mode</label>
                         <select id="uploadModeSelect">
                             <option value="stream" selected>Stream (20ms frames, full-speed)</option>
                             <option value="whole">Whole (single fused clip score)</option>
                         </select>
                     </div>
                     <div class="input-group" style="padding-bottom: 8px;">
-                        <label
-                            style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); cursor: pointer;">
-                            <input type="checkbox" id="uploadPhoneSim" checked
-                                style="width: 14px; height: 14px; accent-color: var(--teal);">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer;">
+                            <input type="checkbox" id="uploadPhoneSim" checked style="width: 15px; height: 15px; accent-color: var(--action);">
                             <span>Apply Phone Simulation</span>
                         </label>
                     </div>
                     <div>
-                        <button id="btnAnalyseUpload" class="btn btn-start" onclick="analyseUploadedFile()">Analyse
-                            Audio</button>
+                        <button id="btnAnalyseUpload" class="btn btn-start" onclick="analyseUploadedFile()">Analyse Audio</button>
                     </div>
                 </div>
 
-                <div id="uploadProgress"
-                    style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--teal); padding: 6px 0;">
+                <div id="uploadProgress" style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); padding: 8px 0;">
                     <span class="status-chip chip-recon">Processing audio upload...</span>
                     <span>Probing format, converting to 16kHz float32 WAV, and running scoring pipeline...</span>
                 </div>
-                <div id="uploadError" class="warning-box"
-                    style="display: none; background: var(--red-dim); border-color: var(--red); color: #fca5a5;"></div>
+                <div id="uploadError" class="warning-box" style="display: none; background: rgba(239, 75, 108, 0.1); border-color: var(--red); color: var(--red);"></div>
 
                 <div id="uploadWarningsBox" class="warning-box" style="display: none;">
                     <strong>Active Warnings:</strong>
                     <ul id="uploadWarningsList"></ul>
                 </div>
 
-                <div
-                    style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--card-border);">
-                    <button class="btn"
-                        style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 6px 12px; width: auto; font-size: 11px;"
-                        onclick="downloadResultJson()">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="downloadResultJson()">
                         &#x2913; Download result as JSON
                     </button>
                 </div>
 
                 <!-- Fixed Text Disclaimer Under Upload -->
                 <div class="fixed-disclaimer">
-                    UPLOAD ANALYSIS, not a validated accuracy figure. Calibrated for one enrolled speaker. Synthetic-speech detector is off. A 'Block' or 'Step-up' means the system is suspicious, not that the clip is proven fake. An 'Allow' does not prove the clip is genuine.
+                    UPLOAD ANALYSIS
                 </div>
             </div>
 
@@ -1048,15 +1297,12 @@
                         </div>
                         <div class="audio-ctrl-strip">
                             <div class="audio-playback-actions">
-                                <button id="playPauseBtn" class="btn-play-pause" onclick="toggleAudioPlayback()"
-                                    title="Play/Pause">&#9658;</button>
-                                <span id="audioTimeReadout" class="mono"
-                                    style="color: var(--text-secondary); font-size: 12px;">00:00 / 00:00</span>
+                                <button id="playPauseBtn" class="btn-play-pause" onclick="toggleAudioPlayback()" title="Play/Pause">&#9658;</button>
+                                <span id="audioTimeReadout" class="mono" style="color: var(--text-secondary); font-size: 12px;">00:00 / 00:00</span>
                             </div>
                             <div id="audioEventMarkers" style="display: flex; gap: 6px; align-items: center;">
-                                <span style="font-size: 10px; color: var(--text-muted);">Event markers:</span>
-                                <span id="markersList"
-                                    style="font-size: 11px; color: var(--text-secondary);">None</span>
+                                <span style="font-size: 11px; color: var(--text-muted);">Event markers:</span>
+                                <span id="markersList" style="font-size: 12px; color: var(--text-secondary);">None</span>
                             </div>
                         </div>
                     </div>
@@ -1064,7 +1310,7 @@
                     <!-- b) Mel-Spectrogram Card (display only, not the model input) -->
                     <div class="card">
                         <div class="section-title">
-                            <span>Mel-spectrogram (display only, not the model input)</span>
+                            <span>Mel-spectrogram</span>
                             <span class="sub">Server-Generated 64 &times; 300 int8 Matrix</span>
                         </div>
                         <div class="axis-canvas-wrapper">
@@ -1072,7 +1318,7 @@
                             <span class="y-axis-label" style="top: 48px;">4 kHz</span>
                             <span class="y-axis-label" style="bottom: 26px;">0 Hz</span>
                             <canvas id="spectrogramCanvas" class="vis-canvas" width="560" height="110"></canvas>
-                            <span class="x-axis-label" style="left: 44px;">0.0s</span>
+                            <span class="x-axis-label" style="left: 48px;">0.0s</span>
                             <span id="specDurationLabel" class="x-axis-label" style="right: 8px;">--s</span>
                         </div>
                     </div>
@@ -1128,11 +1374,11 @@
                                 <span id="speakerMatchPct">--%</span> match
                             </div>
                         </div>
-                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
                             mapped with a fixed linear map fit on evaluation data, not a calibrated probability
                         </div>
 
-                        <!-- Reference Bar with (a) and (b) reference marks (NO 85% threshold) -->
+                        <!-- Reference Bar with (a) and (b) reference marks -->
                         <div class="reference-bar-container">
                             <div class="reference-bar">
                                 <div id="speakerBarFill" class="reference-fill"></div>
@@ -1147,12 +1393,11 @@
 
                         <!-- Per-window Speaker Sim Trend Canvas -->
                         <div style="margin-top: 18px;">
-                            <div
-                                style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight: 700;">
-                                Per-Window Speaker Similarity Trend</div>
-                            <div class="canvas-container" style="height: 54px;">
-                                <canvas id="speakerChartCanvas" width="500" height="54"
-                                    style="width: 100%; height: 54px; display: block;"></canvas>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.04em;">
+                                Per-Window Speaker Similarity Trend
+                            </div>
+                            <div class="canvas-container" style="height: 56px;">
+                                <canvas id="speakerChartCanvas" width="500" height="56" style="width: 100%; height: 56px; display: block;"></canvas>
                             </div>
                         </div>
                     </div>
@@ -1167,9 +1412,8 @@
                             <div id="replayProbVal" class="readout-num">--</div>
                             <div class="readout-sub">Acoustic Loudspeaker Probability</div>
                         </div>
-                        <div class="canvas-container" style="height: 54px; margin-top: 10px;">
-                            <canvas id="replayChartCanvas" width="500" height="54"
-                                style="width: 100%; height: 54px; display: block;"></canvas>
+                        <div class="canvas-container" style="height: 56px; margin-top: 12px;">
+                            <canvas id="replayChartCanvas" width="500" height="56" style="width: 100%; height: 56px; display: block;"></canvas>
                         </div>
                     </div>
 
@@ -1195,20 +1439,17 @@
                                 </div>
                             </div>
                             <div id="spoofDetectorRow" class="detector-row"
-                                style="background: rgba(148, 163, 184, 0.03); border-color: rgba(148, 163, 184, 0.2); flex-direction: column; align-items: stretch; gap: 4px;">
+                                style="background: var(--bg-hover); border-color: var(--border); flex-direction: column; align-items: stretch; gap: 4px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span id="detRowSpoofTitle" class="det-title">Synthetic speech (AASIST,
-                                        recalibrated)</span>
+                                    <span id="detRowSpoofTitle" class="det-title">Synthetic speech (AASIST, recalibrated)</span>
                                     <div class="det-right">
-                                        <span id="detRowSpoofVal" class="det-num"
-                                            style="display: inline-block; color: #94a3b8; font-weight: 700;">--</span>
-                                        <span id="detRowSpoofChip" class="chip chip-off" style="display: none;"></span>
+                                        <span id="detRowSpoofVal" class="det-num" style="display: inline-block; color: var(--text-secondary); font-weight: 600;">--</span>
+                                        <span id="detRowSpoofChip" class="chip chip-off" style="display: none;">OFF, domain shift</span>
                                     </div>
                                 </div>
                                 <div id="detRowSpoofLabel"
-                                    style="display: block; font-size: 10px; color: var(--text-muted); line-height: 1.35; padding-top: 4px; border-top: 1px solid rgba(148, 163, 184, 0.15);">
-                                    AASIST output recalibrated on project data (optimistic, one speaker). Display only,
-                                    not used in decision.
+                                    style="display: block; font-size: 11px; color: var(--text-muted); line-height: 1.35; padding-top: 4px; border-top: 1px solid var(--border);">
+                                    AASIST output recalibrated on project data (optimistic, one speaker). Display only, not used in decision.
                                 </div>
                             </div>
                         </div>
@@ -1222,8 +1463,7 @@
                         </div>
                         <div class="fused-risk-display">
                             <div id="riskScoreVal" class="risk-huge">0.00</div>
-                            <div id="riskDecisionVal" style="font-size: 15px; font-weight: 700; color: var(--green);">
-                                Allow</div>
+                            <div id="riskDecisionVal" style="font-size: 16px; font-weight: 600; color: var(--green);">Allow</div>
                         </div>
                         <div class="risk-bar-track">
                             <div id="riskProgressBar" class="risk-bar-progress" style="background: var(--green);"></div>
@@ -1235,9 +1475,8 @@
                             <span>1.00</span>
                         </div>
                         <div id="riskExplanationText"
-                            style="margin-top: 14px; font-size: 11px; color: var(--text-secondary); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--card-border);">
-                            Weights: 50% Speaker, 50% Replay, 0% Spoof (off). Sustained evidence rule requires 3
-                            consecutive qualifying windows.
+                            style="margin-top: 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; padding-top: 10px; border-top: 1px solid var(--border);">
+                            Weights: 50% Speaker, 50% Replay, 0% Spoof (off). Sustained evidence rule requires 3 consecutive qualifying windows.
                         </div>
                     </div>
 
@@ -1245,7 +1484,7 @@
             </div>
 
             <!-- Cryptographic Audit Trail Table -->
-            <div id="auditPanelCard" class="card" style="margin-top: 20px;">
+            <div id="auditPanelCard" class="card" style="margin-top: 16px;">
                 <div class="section-title">
                     <span>Cryptographic Audit Chain (Recent Scored Windows)</span>
                     <span id="auditVerifiedBadge" class="status-chip chip-live">Chain Verified</span>
@@ -1265,8 +1504,7 @@
                     </thead>
                     <tbody id="auditTableBody">
                         <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-muted);">Listening for live or
-                                demo streaming events...</td>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Listening for live or demo streaming events...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1276,18 +1514,10 @@
             <details class="limitations-box">
                 <summary>&#9656; System Methodological Limitations &amp; Disclosures (Click to Expand)</summary>
                 <ul>
-                    <li><strong>Single-Speaker Enrollment</strong>: Calibrated specifically against target speaker
-                        (<code>gokul</code>). Multi-speaker false acceptance rates require larger multi-speaker corpora.
-                    </li>
-                    <li><strong>AASIST Spoof Disabled</strong>: Pretrained AASIST is disabled in production
-                        (<code>weight: 0.0</code>) due to severe acoustic domain shift on non-studio consumer
-                        microphones (<code>cause not measured</code>).</li>
-                    <li><strong>Replay Channel Confound</strong>: Replay detector was trained on clips recorded with a
-                        single phone and loudspeaker; open-world acoustic replay generalization remains an ongoing
-                        research challenge.</li>
-                    <li><strong>Exhibition Simulation</strong>: This interface demonstrates telephony risk engine
-                        evaluation under software simulation; it is not connected to live carrier PSTN telephone lines.
-                    </li>
+                    <li><strong>Single-Speaker Enrollment</strong>: Calibrated specifically against target speaker (<code>gokul</code>). Multi-speaker false acceptance rates require larger multi-speaker corpora.</li>
+                    <li><strong>AASIST Spoof Disabled</strong>: Pretrained AASIST is disabled in production (<code>weight: 0.0</code>) due to severe acoustic domain shift on non-studio consumer microphones (<code>cause not measured</code>).</li>
+                    <li><strong>Replay Channel Confound</strong>: Replay detector was trained on clips recorded with a single phone and loudspeaker; open-world acoustic replay generalization remains an ongoing research challenge.</li>
+                    <li><strong>Exhibition Simulation</strong>: This interface demonstrates telephony risk engine evaluation under software simulation; it is not connected to live carrier PSTN telephone lines.</li>
                 </ul>
             </details>
 
@@ -1297,9 +1527,7 @@
     <!-- Bottom Sticky Action Bar -->
     <footer class="bottom-action-bar">
         <div class="action-left">
-            <button id="btnReviewAudio" class="btn"
-                style="background: #1e293b; color: #fff; border: 1px solid #334155; padding: 8px 14px;"
-                onclick="toggleAudioPlayback()">
+            <button id="btnReviewAudio" class="btn btn-secondary" onclick="toggleAudioPlayback()">
                 &#9658; Review audio
             </button>
             <div id="verdictBanner" class="action-verdict verdict-allow">
@@ -1310,13 +1538,10 @@
             </div>
         </div>
         <div class="disclaimer-subtext">
-            Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the
-            clip is genuine.
+            Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the clip is genuine.
         </div>
         <div>
-            <button id="btnDownloadJson" class="btn"
-                style="background: #1e293b; color: var(--teal); border: 1px solid rgba(20, 184, 166, 0.4); padding: 8px 14px;"
-                onclick="downloadResultJson()">
+            <button id="btnDownloadJson" class="btn btn-secondary" onclick="downloadResultJson()">
                 &#x2913; Download result (JSON, no audio)
             </button>
         </div>
@@ -1339,6 +1564,36 @@
         let ws = null;
         let reconnectDelay = 1000;
 
+        // Theme management
+        function initTheme() {
+            const saved = localStorage.getItem("shield_theme") || "light";
+            document.documentElement.setAttribute("data-theme", saved);
+            updateThemeIcon(saved);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute("data-theme") || "light";
+            const next = current === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", next);
+            localStorage.setItem("shield_theme", next);
+            updateThemeIcon(next);
+            // Refresh canvases with theme background
+            if (activeAudioBuffer) drawWaveform(activeAudioBuffer);
+            if (lastAnalysisResult && lastAnalysisResult.spectrogram && lastAnalysisResult.spectrogram.mel_matrix) {
+                drawSpectrogram(lastAnalysisResult.spectrogram.mel_matrix, lastAnalysisResult.duration || activeAudioBuffer?.duration || 0);
+            }
+            const spkValues = currentWindows.map(w => w.detector_scores?.speaker_sim).filter(v => v !== undefined && v !== null);
+            drawTrendChart("speakerChartCanvas", spkValues, "#22C55E", 0.0, 0.8);
+            const repValues = currentWindows.map(w => w.detector_scores?.replay_prob).filter(v => v !== undefined && v !== null);
+            drawTrendChart("replayChartCanvas", repValues, "#F5A623", 0.0, 1.0);
+        }
+
+        function updateThemeIcon(theme) {
+            const btn = document.getElementById("themeToggleBtn");
+            if (btn) btn.innerHTML = theme === "dark" ? "&#9728;" : "&#9790;";
+        }
+        initTheme();
+
         // Fetch public config
         async function fetchPublicConfig() {
             try {
@@ -1354,9 +1609,18 @@
 
         // Switch Navigation
         function switchNav(panel) {
+            // Update sidebar buttons
             document.querySelectorAll(".nav-icon-btn").forEach(b => b.classList.remove("active"));
             const targetBtn = Array.from(document.querySelectorAll(".nav-icon-btn")).find(b => b.textContent.toLowerCase().includes(panel));
             if (targetBtn) targetBtn.classList.add("active");
+
+            // Update topbar text tabs
+            document.querySelectorAll(".topbar-tab").forEach(t => t.classList.remove("active"));
+            const tabMap = { 'overview': 'tabOverview', 'demo': 'tabDemo', 'upload': 'tabUpload', 'audit': 'tabAudit' };
+            if (tabMap[panel]) {
+                const tb = document.getElementById(tabMap[panel]);
+                if (tb) tb.classList.add("active");
+            }
 
             document.getElementById("breadcrumbSection").textContent = panel.charAt(0).toUpperCase() + panel.slice(1);
 
@@ -1448,83 +1712,77 @@
                     sel.appendChild(opt);
                 });
             } catch (e) {
-                console.error("Failed to load demo scenarios", e);
+                console.error("Failed to load demo scenarios:", e);
             }
         }
         loadScenarios();
 
         document.getElementById("scenarioSelect").addEventListener("change", async (e) => {
-            const sid = e.target.value;
-            if (!sid) return;
-            activeScenario = sid;
-            document.getElementById("activeAudioSourceLabel").textContent = `Demo: ${sid}`;
-            document.getElementById("detailSource").textContent = `demo: ${sid}`;
+            const scId = e.target.value;
+            if (!scId) return;
 
-            // Load and decode audio browser-side for waveform
-            loadAndDecodeAudio(`/demo/audio/${sid}`);
-            // Fetch mel-spectrogram
-            fetchSpectrogram(`/demo/spectrogram/${sid}`);
-        });
+            document.getElementById("activeAudioSourceLabel").textContent = `Demo: ${scId}`;
+            document.getElementById("detailSource").textContent = `demo scenario: ${scId}`;
 
-        // Load & Decode audio browser-side (never uploaded audio sent back)
-        async function loadAndDecodeAudio(url) {
+            // Load audio into local player for audio review
+            const aud = document.getElementById("coreAudioPlayer");
+            aud.src = `/demo/audio/${scId}`;
+
+            // Fetch decoded audio for waveform canvas
             try {
+                const res = await fetch(`/demo/audio/${scId}`);
+                const arrayBuf = await res.arrayBuffer();
                 const ctx = getAudioContext();
-                const resp = await fetch(url);
-                const arrayBuffer = await resp.arrayBuffer();
-                audioContext.decodeAudioData(arrayBuffer, (buffer) => {
-                    activeAudioBuffer = buffer;
-                    const dur = buffer.duration;
-                    document.getElementById("detailDuration").textContent = `${dur.toFixed(2)}s`;
-                    document.getElementById("audioTimeReadout").textContent = `00:00 / ${formatTime(dur)}`;
-                    drawWaveform(buffer);
-                    const aud = document.getElementById("coreAudioPlayer");
-                    aud.src = url;
+                ctx.decodeAudioData(arrayBuf, (buf) => {
+                    activeAudioBuffer = buf;
+                    document.getElementById("detailDuration").textContent = `${buf.duration.toFixed(2)}s`;
+                    document.getElementById("audioTimeReadout").textContent = `00:00 / ${formatTime(buf.duration)}`;
+                    drawWaveform(buf);
                 });
-            } catch (e) {
-                console.warn("Waveform decode error:", e);
+            } catch (err) {
+                console.warn("Waveform decode error:", err);
             }
-        }
 
-        async function fetchSpectrogram(url) {
+            // Fetch server-rendered mel-spectrogram matrix (64x300 int8)
             try {
-                const resp = await fetch(url);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data && data.mel_matrix) {
-                        drawSpectrogram(data.mel_matrix, data.duration_sec || 0);
-                    }
+                const resSpec = await fetch(`/demo/spectrogram/${scId}`);
+                if (resSpec.ok) {
+                    const specData = await resSpec.json();
+                    drawSpectrogram(specData.mel_matrix, activeAudioBuffer?.duration || 0);
                 }
-            } catch (e) {
-                console.warn("Spectrogram fetch error:", e);
+            } catch (err) {
+                console.warn("Spectrogram fetch error:", err);
             }
-        }
+        });
 
         // Draw Waveform on Canvas
         function drawWaveform(audioBuf) {
             const canvas = document.getElementById("waveformCanvas");
+            if (!canvas) return;
             const ctx = canvas.getContext("2d");
             const width = canvas.width;
             const height = canvas.height;
 
             ctx.clearRect(0, 0, width, height);
 
+            const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+            ctx.fillStyle = isDark ? "#141417" : "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+
             const rawData = audioBuf.getChannelData(0);
             const step = Math.ceil(rawData.length / width);
             const amp = height / 2;
 
-            ctx.fillStyle = "#070e1c";
-            ctx.fillRect(0, 0, width, height);
-
-            // Draw center guide
-            ctx.strokeStyle = "rgba(30, 41, 59, 0.8)";
+            // Center guideline
+            ctx.strokeStyle = isDark ? "#26262B" : "#ECECEE";
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(0, amp);
-            ctx.lineTo(width, amp);
+            ctx.moveTo(0, amp + 0.5);
+            ctx.lineTo(width, amp + 0.5);
             ctx.stroke();
 
-            // Draw wave
-            ctx.fillStyle = "#14b8a6";
+            // Waveform bars
+            ctx.fillStyle = isDark ? "#E4E4E7" : "#111113";
             for (let i = 0; i < width; i++) {
                 let min = 1.0;
                 let max = -1.0;
@@ -1538,13 +1796,13 @@
                 ctx.fillRect(i, y1, 1, Math.max(1, y2 - y1));
             }
 
-            // Draw window markers if available
             drawMarkersOnCanvas(ctx, width, height, audioBuf.duration);
         }
 
         // Draw Mel-Spectrogram on Canvas
         function drawSpectrogram(melMatrix, duration) {
             const canvas = document.getElementById("spectrogramCanvas");
+            if (!canvas) return;
             const ctx = canvas.getContext("2d");
             const width = canvas.width;
             const height = canvas.height;
@@ -1559,21 +1817,19 @@
             const rowH = height / nMels;
 
             for (let m = 0; m < nMels; m++) {
-                const y = height - ((m + 1) * rowH); // Low freq at bottom
+                const y = height - ((m + 1) * rowH);
                 for (let f = 0; f < nFrames; f++) {
-                    const val = melMatrix[m][f]; // int8 in [-128, 127]
-                    const norm = (val + 128) / 255.0; // [0, 1]
-                    // Palette: dark navy -> teal -> amber
-                    const r = Math.floor(norm * 245);
-                    const g = Math.floor(Math.sin(norm * Math.PI) * 184 + 10);
-                    const b = Math.floor((1 - norm) * 166 + 30);
+                    const val = melMatrix[m][f];
+                    const norm = (val + 128) / 255.0;
+                    const r = Math.floor(norm * 239);
+                    const g = Math.floor(Math.sin(norm * Math.PI) * 197 + 20);
+                    const b = Math.floor((1 - norm) * 150 + 20);
                     ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                     ctx.fillRect(f * colW, y, Math.ceil(colW), Math.ceil(rowH));
                 }
             }
 
             document.getElementById("specDurationLabel").textContent = `${duration.toFixed(1)}s`;
-            // Draw window markers on spectrogram
             drawMarkersOnCanvas(ctx, width, height, duration);
         }
 
@@ -1583,7 +1839,7 @@
                 if (w.action_trigger || w.action_taken || w.band_changed) {
                     const sec = (w.window || w.window_index || 1) * 1.0;
                     const x = (sec / duration) * width;
-                    ctx.strokeStyle = w.action_trigger === "block" ? "#ef4444" : "#f59e0b";
+                    ctx.strokeStyle = w.action_trigger === "block" ? "#EF4B6C" : "#F5A623";
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     ctx.moveTo(x, 0);
@@ -1593,45 +1849,72 @@
             });
         }
 
-        // Draw Mini Charts for Speaker and Replay trends
+        // Draw Mini Trend Line Charts with Soft Gradient Fill
         function drawTrendChart(canvasId, values, color, minVal, maxVal) {
             const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             const ctx = canvas.getContext("2d");
             const w = canvas.width;
             const h = canvas.height;
             ctx.clearRect(0, 0, w, h);
 
-            ctx.fillStyle = "#070e1c";
+            const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+            ctx.fillStyle = isDark ? "#141417" : "#FFFFFF";
             ctx.fillRect(0, 0, w, h);
+
+            // Baseline hairline
+            ctx.strokeStyle = isDark ? "#26262B" : "#ECECEE";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, h - 0.5);
+            ctx.lineTo(w, h - 0.5);
+            ctx.stroke();
 
             if (!values || values.length === 0) return;
 
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-
             const n = values.length;
             const stepX = n > 1 ? (w - 16) / (n - 1) : 0;
-
-            values.forEach((v, idx) => {
+            const pts = values.map((v, idx) => {
                 const normY = (v - minVal) / (maxVal - minVal + 1e-6);
                 const clampedNorm = Math.max(0, Math.min(1, normY));
                 const y = h - 8 - (clampedNorm * (h - 16));
                 const x = 8 + (idx * stepX);
-                if (idx === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                return { x, y };
+            });
+
+            // Soft gradient fill under curve
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            if (color === "#22C55E" || color === "var(--green)") {
+                grad.addColorStop(0, isDark ? "rgba(34, 197, 94, 0.25)" : "rgba(34, 197, 94, 0.18)");
+                grad.addColorStop(1, isDark ? "rgba(34, 197, 94, 0.0)" : "rgba(34, 197, 94, 0.0)");
+            } else {
+                grad.addColorStop(0, isDark ? "rgba(245, 166, 35, 0.25)" : "rgba(245, 166, 35, 0.18)");
+                grad.addColorStop(1, isDark ? "rgba(245, 166, 35, 0.0)" : "rgba(245, 166, 35, 0.0)");
+            }
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, h);
+            pts.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.lineTo(pts[pts.length - 1].x, h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Line (2px width)
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            pts.forEach((p, idx) => {
+                if (idx === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
             });
             ctx.stroke();
 
             // Point dots
             ctx.fillStyle = color;
-            values.forEach((v, idx) => {
-                const normY = (v - minVal) / (maxVal - minVal + 1e-6);
-                const clampedNorm = Math.max(0, Math.min(1, normY));
-                const y = h - 8 - (clampedNorm * (h - 16));
-                const x = 8 + (idx * stepX);
+            pts.forEach(p => {
                 ctx.beginPath();
-                ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
                 ctx.fill();
             });
         }
@@ -1729,17 +2012,36 @@
             document.getElementById("riskDecisionVal").textContent = decision;
             document.getElementById("riskBandChip").textContent = band;
 
+            // Update KPI block
+            const kpiRisk = document.getElementById("kpiRiskVal");
+            if (kpiRisk) kpiRisk.textContent = risk.toFixed(2);
+            const kpiRiskBadge = document.getElementById("kpiRiskBadge");
+            if (kpiRiskBadge) kpiRiskBadge.textContent = band;
+            const kpiRiskBar = document.getElementById("kpiRiskBar");
+            if (kpiRiskBar) {
+                kpiRiskBar.style.width = `${Math.min(100, Math.max(0, risk * 100))}%`;
+            }
+
             const bar = document.getElementById("riskProgressBar");
             bar.style.width = `${Math.min(100, Math.max(0, risk * 100))}%`;
             if (band === "HIGH") {
                 bar.style.background = "var(--red)";
+                if (kpiRiskBar) kpiRiskBar.style.background = "var(--red)";
+                if (kpiRiskBadge) kpiRiskBadge.className = "chip chip-block";
                 document.getElementById("riskBandChip").className = "chip chip-block";
+                document.getElementById("riskDecisionVal").style.color = "var(--red)";
             } else if (band === "MEDIUM") {
-                bar.style.background = "var(--amber)";
+                bar.style.background = "var(--orange)";
+                if (kpiRiskBar) kpiRiskBar.style.background = "var(--orange)";
+                if (kpiRiskBadge) kpiRiskBadge.className = "chip chip-warn";
                 document.getElementById("riskBandChip").className = "chip chip-warn";
+                document.getElementById("riskDecisionVal").style.color = "var(--orange)";
             } else {
                 bar.style.background = "var(--green)";
+                if (kpiRiskBar) kpiRiskBar.style.background = "var(--green)";
+                if (kpiRiskBadge) kpiRiskBadge.className = "chip chip-allow";
                 document.getElementById("riskBandChip").className = "chip chip-allow";
+                document.getElementById("riskDecisionVal").style.color = "var(--green)";
             }
 
             // Detectors
@@ -1756,12 +2058,20 @@
                 document.getElementById("speakerMatchPct").textContent = `${pct}%`;
                 document.getElementById("speakerBarFill").style.width = `${pct}%`;
 
+                // Update KPI Speaker
+                const kpiSpk = document.getElementById("kpiSpkVal");
+                if (kpiSpk) kpiSpk.textContent = `${pct}%`;
+                const kpiSpkBar = document.getElementById("kpiSpkBar");
+                if (kpiSpkBar) kpiSpkBar.style.width = `${pct}%`;
+
                 if (pct >= 50) {
                     document.getElementById("detRowSpeakerChip").textContent = "MATCH";
                     document.getElementById("detRowSpeakerChip").className = "chip chip-allow";
+                    if (kpiSpkBar) kpiSpkBar.style.background = "var(--green)";
                 } else {
                     document.getElementById("detRowSpeakerChip").textContent = "LOW SIM";
                     document.getElementById("detRowSpeakerChip").className = "chip chip-warn";
+                    if (kpiSpkBar) kpiSpkBar.style.background = "var(--orange)";
                 }
             }
 
@@ -1770,15 +2080,29 @@
                 document.getElementById("detRowReplayVal").textContent = rep.toFixed(2);
                 const rChip = document.getElementById("replayChip");
                 const rRowChip = document.getElementById("detRowReplayChip");
+
+                // Update KPI Replay
+                const kpiRep = document.getElementById("kpiRepVal");
+                if (kpiRep) kpiRep.textContent = rep.toFixed(2);
+                const kpiRepBar = document.getElementById("kpiRepBar");
+                if (kpiRepBar) kpiRepBar.style.width = `${Math.min(100, rep * 100)}%`;
+                const kpiRepBadge = document.getElementById("kpiRepBadge");
+
                 if (rep >= 0.60) {
                     rChip.textContent = "HIGH"; rChip.className = "chip chip-block";
                     rRowChip.textContent = "HIGH"; rRowChip.className = "chip chip-block";
+                    if (kpiRepBadge) { kpiRepBadge.textContent = "ALARM"; kpiRepBadge.className = "chip chip-block"; }
+                    if (kpiRepBar) kpiRepBar.style.background = "var(--red)";
                 } else if (rep >= 0.30) {
                     rChip.textContent = "MEDIUM"; rChip.className = "chip chip-warn";
                     rRowChip.textContent = "MEDIUM"; rRowChip.className = "chip chip-warn";
+                    if (kpiRepBadge) { kpiRepBadge.textContent = "WARN"; kpiRepBadge.className = "chip chip-warn"; }
+                    if (kpiRepBar) kpiRepBar.style.background = "var(--orange)";
                 } else {
                     rChip.textContent = "LOW"; rChip.className = "chip chip-allow";
                     rRowChip.textContent = "LOW"; rRowChip.className = "chip chip-allow";
+                    if (kpiRepBadge) { kpiRepBadge.textContent = "CLEAR"; kpiRepBadge.className = "chip chip-allow"; }
+                    if (kpiRepBar) kpiRepBar.style.background = "var(--green)";
                 }
             }
 
@@ -1794,7 +2118,7 @@
                 if (sVal) {
                     sVal.style.display = "inline-block";
                     sVal.textContent = (calExp.value !== undefined && calExp.value !== null) ? Number(calExp.value).toFixed(2) : "--";
-                    sVal.style.color = "#94a3b8";
+                    sVal.style.color = "var(--text-secondary)";
                 }
                 if (sChip) {
                     sChip.style.display = "none";
@@ -1809,6 +2133,7 @@
                 if (sChip) {
                     sChip.textContent = "OFF, domain shift";
                     sChip.className = "chip chip-warn";
+                    sChip.style.display = "inline-block";
                     sChip.style.background = "";
                     sChip.style.color = "";
                     sChip.style.borderColor = "";
@@ -1818,60 +2143,49 @@
 
             // Update Trend Charts
             const spkValues = currentWindows.map(w => w.detector_scores?.speaker_sim).filter(v => v !== undefined && v !== null);
-            drawTrendChart("speakerChartCanvas", spkValues, "#14b8a6", 0.0, 0.8);
+            drawTrendChart("speakerChartCanvas", spkValues, "#22C55E", 0.0, 0.8);
 
             const repValues = currentWindows.map(w => w.detector_scores?.replay_prob).filter(v => v !== undefined && v !== null);
-            drawTrendChart("replayChartCanvas", repValues, "#f59e0b", 0.0, 1.0);
+            drawTrendChart("replayChartCanvas", repValues, "#F5A623", 0.0, 1.0);
 
-            // Details
+            // Details card
             document.getElementById("detailWindows").textContent = `${currentWindows.length} scored / 0 skipped`;
             if (ev.call_sid) document.getElementById("detailCallSid").textContent = ev.call_sid;
 
-            // Scenario status & match
-            if (ev.expected_outcome) document.getElementById("expectedLabel").textContent = `Expected: ${ev.expected_outcome}`;
-            if (ev.outcome) document.getElementById("outcomeLabel").textContent = `Outcome: ${ev.outcome}`;
-            document.getElementById("bandLabel").textContent = `Final Band: ${band}`;
+            // Markers list
+            updateEventMarkersList();
 
-            const mPill = document.getElementById("matchPill");
-            if (ev.match !== undefined) {
-                mPill.style.display = "inline-block";
-                if (ev.match) {
-                    mPill.textContent = "MATCH";
-                    mPill.className = "status-pill pill-match";
+            // Append Audit Row
+            appendAuditRow(ev);
+
+            // Update Scenario Comparison
+            if (ev.scenario_expected) {
+                document.getElementById("expectedLabel").textContent = `Expected: ${ev.scenario_expected.expected_band} (${ev.scenario_expected.expected_decision})`;
+            }
+            document.getElementById("bandLabel").textContent = `Final Band: ${band}`;
+            document.getElementById("outcomeLabel").textContent = `Outcome: ${decision}`;
+
+            if (ev.scenario_match !== undefined) {
+                const mp = document.getElementById("matchPill");
+                mp.style.display = "inline-block";
+                if (ev.scenario_match) {
+                    mp.textContent = "MATCH";
+                    mp.className = "status-pill pill-match";
                 } else {
-                    mPill.textContent = `MISMATCH: ${ev.discrepancy || 'flagged'}`;
-                    mPill.className = "status-pill pill-mismatch";
+                    mp.textContent = "MISMATCH (review threshold/intent)";
+                    mp.className = "status-pill pill-mismatch";
                 }
             }
 
-            // Bottom Action Bar Verdict Banner & Human Review Chip
-            const outcome = ev.outcome || (band === "HIGH" ? "Block" : (band === "MEDIUM" ? "Step-up only" : "Allow"));
-            updateBottomVerdict(outcome);
-
-            // Event markers for waveform
-            updateEventMarkersList();
-
-            // Append to audit table
-            appendAuditRow(ev);
-
-            // Re-render markers if audio buffer loaded
-            if (activeAudioBuffer) {
-                const canvas = document.getElementById("waveformCanvas");
-                const ctx = canvas.getContext("2d");
-                drawMarkersOnCanvas(ctx, canvas.width, canvas.height, activeAudioBuffer.duration);
-            }
-        }
-
-        function updateBottomVerdict(outcome) {
+            // Sticky Bottom Action Bar
             const vBanner = document.getElementById("verdictBanner");
             const hrChip = document.getElementById("humanReviewChip");
-
-            if (outcome === "Block" || outcome.toLowerCase().includes("block")) {
-                vBanner.textContent = "Suspicious: Block";
+            if (ev.action_taken === "Block" || ev.action_trigger === "block") {
+                vBanner.textContent = "Active Mitigation: Block";
                 vBanner.className = "action-verdict verdict-block";
-                hrChip.style.display = "inline-block";
-            } else if (outcome.toLowerCase().includes("step-up") || outcome.toLowerCase().includes("otp")) {
-                vBanner.textContent = "Suspicious: Step-up (mock OTP)";
+                hrChip.style.display = "none";
+            } else if (ev.action_taken === "MOCK OTP" || ev.action_trigger === "step_up") {
+                vBanner.textContent = "Intervention: Step-Up Auth";
                 vBanner.className = "action-verdict verdict-stepup";
                 hrChip.style.display = "inline-block";
             } else {
@@ -1885,9 +2199,9 @@
             const markers = [];
             currentWindows.forEach(w => {
                 if (w.action_trigger === "step_up" || w.action_taken === "MOCK OTP") {
-                    markers.push(`<span class="marker-tag" style="background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber);">step-up fired</span>`);
+                    markers.push(`<span class="marker-tag" style="background: rgba(245, 166, 35, 0.15); color: var(--orange); border: 1px solid var(--orange);">step-up fired</span>`);
                 } else if (w.action_trigger === "block" || w.action_taken === "Block") {
-                    markers.push(`<span class="marker-tag" style="background: var(--red-dim); color: var(--red); border: 1px solid var(--red);">block fired</span>`);
+                    markers.push(`<span class="marker-tag" style="background: rgba(239, 75, 108, 0.15); color: var(--red); border: 1px solid var(--red);">block fired</span>`);
                 }
             });
             document.getElementById("markersList").innerHTML = markers.length > 0 ? markers.join(" ") : "None";
@@ -1902,12 +2216,12 @@
             tr.innerHTML = `
                 <td class="mono">${ev.call_sid || '--'}</td>
                 <td class="mono">${ev.window || ev.window_index || '--'}</td>
-                <td class="mono">${(ev.risk || 0.0).toFixed(4)}</td>
+                <td class="mono" style="font-weight: 600;">${(ev.risk || 0.0).toFixed(4)}</td>
                 <td><span class="chip ${ev.band === 'HIGH' ? 'chip-block' : (ev.band === 'MEDIUM' ? 'chip-warn' : 'chip-allow')}">${ev.band || 'LOW'}</span></td>
                 <td>${ev.decision || 'Allow'}</td>
                 <td class="mono">${ev.action_trigger || ev.action_taken || 'none'}</td>
                 <td class="mono">${ev.latency_ms || 2.1}ms</td>
-                <td class="mono" style="font-size: 10px;">${(ev.record_hash || 'hash_chain').substring(0, 16)}...</td>
+                <td class="mono" style="font-size: 11px; color: var(--text-muted);">${(ev.record_hash || 'hash_chain').substring(0, 16)}...</td>
             `;
             tbody.insertBefore(tr, tbody.firstChild);
             if (tbody.children.length > 20) tbody.removeChild(tbody.lastChild);
@@ -1937,7 +2251,6 @@
             document.getElementById("activeAudioSourceLabel").textContent = `Upload: ${file.name}`;
             document.getElementById("detailSource").textContent = `uploaded file: ${file.name}`;
 
-            // Decode uploaded file browser-side with Web Audio API for waveform (never send back from server)
             const reader = new FileReader();
             reader.onload = () => {
                 const ctx = getAudioContext();
@@ -1979,12 +2292,10 @@
                 lastAnalysisResult = data;
                 currentWindows = data.windows || [];
 
-                // Render spectrogram if attached
                 if (data.spectrogram && data.spectrogram.mel_matrix) {
                     drawSpectrogram(data.spectrogram.mel_matrix, data.duration || activeAudioBuffer?.duration || 0);
                 }
 
-                // Render latest window as telemetry
                 const lastWin = currentWindows.length > 0 ? currentWindows[currentWindows.length - 1] : {
                     risk: data.risk,
                     band: data.band,
@@ -1995,7 +2306,6 @@
                 lastWin.outcome = data.outcome;
                 handleWindowTelemetry(lastWin);
 
-                // Warnings
                 const warnBox = document.getElementById("uploadWarningsBox");
                 const warnList = document.getElementById("uploadWarningsList");
                 if (data.warnings && data.warnings.length > 0) {
@@ -2014,7 +2324,7 @@
             }
         }
 
-        // Download JSON Result (no audio)
+        // Download JSON Result
         function downloadResultJson() {
             if (!lastAnalysisResult) return alert("Run an analysis or demo first to download JSON");
             const exportData = {
@@ -2028,7 +2338,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `sheld_analysis_${Date.now()}.json`;
+            a.download = `shield_analysis_${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }

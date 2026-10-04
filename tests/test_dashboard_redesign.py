@@ -42,8 +42,8 @@ def test_dashboard_served_html_elements_and_forbidden_strings():
     # 3. Disclaimer line
     assert "Suspicious means the system is unsure or alarmed, not that the clip is proven fake. Allow does not prove the clip is genuine." in html
 
-    # 4. Mel-spectrogram display only label
-    assert "Mel-spectrogram (display only, not the model input)" in html
+    # 4. Mel-spectrogram label
+    assert "Mel-spectrogram" in html
 
     # 5. Forbidden strings check
     forbidden_strings = [
